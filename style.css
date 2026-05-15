@@ -17,11 +17,13 @@ body {
   transition: transform 0.3s ease-in-out;
   cursor: none;
 }
-.heading_4{
-    text-decoration:underline;
+
+.heading_4 {
+  text-decoration: underline;
 }
-.Anchor:hover{
-    color: white;
+
+.Anchor:hover {
+  color: white;
 }
 
 .social-icon:hover {
@@ -33,11 +35,11 @@ body {
 
 
 html {
-      scroll-behavior: smooth;
-    }
+  scroll-behavior: smooth;
+}
 
 nav a.active {
-    color: #00ffff;
+  color: #00ffff;
 }
 
 .navbar {
@@ -191,6 +193,7 @@ nav a {
   padding: 40px 60px;
   min-height: auto;
 }
+
 .tech-icon {
   width: 18px;
   height: 18px;
@@ -248,9 +251,9 @@ nav a {
 
 /* FIXED: Profile Photo Styling */
 .intro-image img {
-  width: 350px;        
+  width: 350px;
   height: 350px;
-  object-fit: cover;   
+  object-fit: cover;
   border-radius: 50%;
   border: 3px solid #00ffff;
   box-shadow: 0 0 20px #00ffff, 0 0 40px rgba(0, 255, 255, 0.3);
@@ -264,7 +267,8 @@ nav a {
   transform: scale(1.05);
 }
 
-h1, p {
+h1,
+p {
   animation: textEnter 3s ease forwards;
   opacity: 1;
   color: white;
@@ -281,7 +285,7 @@ h1 {
 
 /* FIXED: About Me Font Styling */
 .about_me {
-  margin: 0 auto;   
+  margin: 0 auto;
   text-align: center;
   padding: 0 20px;
   font-family: 'Montserrat', sans-serif, Arial;
@@ -374,6 +378,7 @@ footer {
   font-size: 22px;
   opacity: 0.3;
 }
+
 .typing {
   color: #00ffff;
   font-weight: bold;
@@ -487,32 +492,68 @@ footer a:hover {
 }
 
 @keyframes fade-in {
-  0% { opacity: 0; transform: translateY(-10px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideFade {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes zoomIn {
-  0% { transform: scale(0.8); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes textEnter {
-  0% { opacity: 0; transform: translateX(-30px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes intro {
-  from { padding-left: 0px; }
-  to { padding-left: 110px; }
+  from {
+    padding-left: 0px;
+  }
+
+  to {
+    padding-left: 110px;
+  }
 }
 
 @keyframes fadeTrail {
-  to { opacity: 0; transform: scale(2); }
+  to {
+    opacity: 0;
+    transform: scale(2);
+  }
 }
 
 .skills-section {
@@ -550,9 +591,10 @@ footer a:hover {
   font-size: 1.1rem;
 }
 
-.skill-box li{
+.skill-box li {
   text-align: center;
 }
+
 .projects-section {
   display: flex;
   justify-content: center;
@@ -642,12 +684,14 @@ footer a:hover {
   background: linear-gradient(to right, #00ffcc, #0066ff);
   color: black;
 }
+
 .project-box p,
 .project-box h3 {
   padding-left: 0 !important;
   margin-left: 0 !important;
   text-align: center;
 }
+
 .project-box {
   padding-left: 20px;
   padding-right: 20px;
@@ -711,6 +755,7 @@ footer a:hover {
   transform: scale(1.05);
   color: black;
 }
+
 .button-row {
   display: flex;
   justify-content: center;
@@ -756,6 +801,7 @@ footer a:hover {
     opacity: 0;
     transform: translate3d(0, 40px, 0);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -768,6 +814,7 @@ footer a:hover {
     opacity: 0;
     transform: translate3d(0, 0, 0) scale3d(0.8, 0.8, 0.8);
   }
+
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
@@ -780,6 +827,7 @@ footer a:hover {
     opacity: 0;
     transform: perspective(2500px) rotateY(100deg);
   }
+
   to {
     opacity: 1;
     transform: perspective(2500px) rotateY(0deg);
@@ -788,9 +836,12 @@ footer a:hover {
 
 /* Add glow effect on scroll enter */
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 8px 20px rgba(0, 0, 0, 0.2);
   }
+
   50% {
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 8px 30px rgba(0, 0, 0, 0.3);
   }
@@ -815,13 +866,17 @@ html {
 }
 
 /* Add subtle animation to headings */
-h2, h3, h4 {
+h2,
+h3,
+h4 {
   font-family: Calibri, sans-serif;
   text-shadow: 0 2px 10px rgba(0, 255, 255, 0.3);
   transition: text-shadow 0.3s ease;
 }
 
-h2:hover, h3:hover, h4:hover {
+h2:hover,
+h3:hover,
+h4:hover {
   text-shadow: 0 2px 20px rgba(0, 255, 255, 0.6);
 }
 
