@@ -63,9 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
      3. LANDING — Typing Effect
      ───────────────────────────────────────────── */
   const designations = [
-    'Electrical Engineering Student',
-    'Full-Stack Developer',
-    'Data Analyst'
+    'Electrical Engineer Undergraduate',
+    'MERN Full Stack Web Developer',
+    'Data Analyst Intern'
   ];
   const typedEl = document.getElementById('typedText');
   let desIdx = 0;
