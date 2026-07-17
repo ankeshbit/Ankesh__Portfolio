@@ -968,4 +968,62 @@ void main() {
     rafId = requestAnimationFrame(render);
   }
 
+  /* ─────────────────────────────────────────────
+     CERTIFICATE MODAL — Bold Analytics
+     ───────────────────────────────────────────── */
+  const certModal        = document.getElementById('certModal');
+  const openCertBtn      = document.getElementById('openCertModal');
+  const closeCertBtn     = document.getElementById('closeCertModal');
+  const certModalBackdrop = document.getElementById('certModalBackdrop');
+
+  function openCert() {
+    certModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCert() {
+    certModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (openCertBtn) {
+    openCertBtn.addEventListener('click', openCert);
+    openCertBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openCert(); });
+  }
+  if (closeCertBtn)      closeCertBtn.addEventListener('click', closeCert);
+  if (certModalBackdrop) certModalBackdrop.addEventListener('click', closeCert);
+
+  /* ─────────────────────────────────────────────
+     CERTIFICATE MODAL — Prodigy Infotech
+     ───────────────────────────────────────────── */
+  const prodigyCertModal         = document.getElementById('prodigyCertModal');
+  const openProdigyCertBtn       = document.getElementById('openProdigyCertModal');
+  const closeProdigyCertBtn      = document.getElementById('closeProdigyCertModal');
+  const prodigyCertModalBackdrop = document.getElementById('prodigyCertModalBackdrop');
+
+  function openProdigyCert() {
+    prodigyCertModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeProdigyCert() {
+    prodigyCertModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (openProdigyCertBtn) {
+    openProdigyCertBtn.addEventListener('click', openProdigyCert);
+    openProdigyCertBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openProdigyCert(); });
+  }
+  if (closeProdigyCertBtn)      closeProdigyCertBtn.addEventListener('click', closeProdigyCert);
+  if (prodigyCertModalBackdrop) prodigyCertModalBackdrop.addEventListener('click', closeProdigyCert);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (certModal && certModal.classList.contains('open'))         closeCert();
+      if (prodigyCertModal && prodigyCertModal.classList.contains('open')) closeProdigyCert();
+    }
+  });
+
 });
+

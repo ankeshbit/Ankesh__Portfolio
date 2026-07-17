@@ -796,6 +796,9 @@ ul {
 
 .timeline {
   margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 
 .exp-card {
@@ -991,10 +994,208 @@ ul {
   transition-delay: 0.85s;
 }
 
+/* --- Certificate Preview inside Experience Card --- */
+.exp-certificate {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(212, 168, 83, 0.12);
+}
+
+.exp-cert-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+.exp-cert-label svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.exp-cert-preview {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(212, 168, 83, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: all 0.35s var(--ease-out-expo);
+  max-width: 480px;
+}
+
+.exp-cert-preview:hover {
+  transform: scale(1.02);
+  border-color: rgba(212, 168, 83, 0.45);
+  box-shadow: 0 8px 32px rgba(212, 168, 83, 0.15), 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.exp-cert-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: filter 0.35s ease;
+}
+
+.exp-cert-preview:hover .exp-cert-img {
+  filter: brightness(0.55);
+}
+
+.exp-cert-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.exp-cert-preview:hover .exp-cert-overlay {
+  opacity: 1;
+}
+
+.exp-cert-overlay svg {
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
+/* PDF cert thumbnail variant */
+.exp-cert-pdf-link {
+  text-decoration: none;
+  display: block;
+}
+
+.exp-cert-pdf-thumb {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  background: rgba(212, 168, 83, 0.05);
+  border-radius: 12px;
+  transition: background 0.3s ease;
+}
+
+.exp-cert-pdf-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.exp-cert-pdf-label span:last-child {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.exp-cert-pdf-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: rgba(212, 168, 83, 0.2);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  width: fit-content;
+}
+
+.exp-cert-pdf-link:hover .exp-cert-pdf-thumb {
+  background: rgba(212, 168, 83, 0.09);
+}
+
+
+/* --- Certificate Modal / Lightbox --- */
+.cert-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.cert-modal.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.cert-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 10, 25, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.cert-modal-content {
+  position: relative;
+  z-index: 1;
+  max-width: min(900px, 90vw);
+  width: 100%;
+  transform: scale(0.88) translateY(20px);
+  transition: transform 0.35s var(--ease-out-expo);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 168, 83, 0.2);
+}
+
+.cert-modal.open .cert-modal-content {
+  transform: scale(1) translateY(0);
+}
+
+.cert-modal-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cert-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(15, 20, 40, 0.85);
+  border: 1px solid rgba(212, 168, 83, 0.3);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.cert-modal-close:hover {
+  background: rgba(212, 168, 83, 0.15);
+  border-color: var(--accent);
+  transform: rotate(90deg);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    PAGE 4: EDUCATION
    ═══════════════════════════════════════════════════════════════ */
 .section-education {
+
   background: var(--bg-primary);
 }
 
