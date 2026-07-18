@@ -1068,7 +1068,7 @@ ul {
 }
 
 .exp-cert-overlay svg {
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
 
 /* PDF cert thumbnail variant */
@@ -1819,199 +1819,214 @@ ul {
 /* ═══════════════════════════ PAGE 7: CERTIFICATIONS (Collection Surfer 3D) ═══════════════════════════ */
 .section-certifications {
   position: relative;
-  height: 8000px; /* Length of scroll animation */
-  background: #000;
+  height: 100vh;
+  min-height: 700px;
+  background: #06090e;
+  /* Match theme dark */
   margin: 0;
-  padding: 0 !important;
+  padding: 80px 0 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.cert-sticky-wrapper {
-  position: sticky;
-  top: 0;
-  height: 100vh;
+.cert-carousel-wrapper {
   width: 100%;
-  overflow: hidden;
+  height: 60%;
+  min-height: 400px;
+  position: relative;
+  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
+  cursor: grab;
+  user-select: none;
 }
 
-.perspective-container {
-  position: relative;
+.cert-carousel-wrapper:active {
+  cursor: grabbing;
+}
+
+.cert-carousel-inner {
+  --w: 280px;
+  --h: 200px;
+  --translateZ: 850px;
+  --rotateX: -10deg;
+  --perspective: 2000px;
+  position: absolute;
+  width: var(--w);
+  height: var(--h);
+  z-index: 2;
+  transform-style: preserve-3d;
+  transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0deg);
+  will-change: transform;
+  transition: transform 0.1s linear;
+  /* subtle smoothing */
+}
+
+/* Responsiveness for 3D Carousel */
+@media (max-width: 1200px) {
+  .cert-carousel-inner {
+    --w: 230px;
+    --h: 165px;
+    --translateZ: 700px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cert-carousel-inner {
+    --w: 170px;
+    --h: 120px;
+    --translateZ: 520px;
+    --rotateX: -8deg;
+  }
+
+  .section-certifications {
+    min-height: 550px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cert-carousel-inner {
+    --w: 120px;
+    --h: 85px;
+    --translateZ: 380px;
+    --rotateX: -6deg;
+  }
+
+  .section-certifications {
+    min-height: 480px;
+  }
+}
+
+.cert-carousel-card {
+  position: absolute;
+  border: 2px solid rgba(var(--color-card), 0.35);
+  border-radius: 12px;
+  overflow: hidden;
+  inset: 0;
+  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ));
+  transform-style: preserve-3d;
+  cursor: pointer;
+  background: #101524;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(var(--color-card), 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  backface-visibility: visible;
+}
+
+.cert-carousel-card:hover {
+  border-color: rgba(var(--color-card), 1);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(var(--color-card), 0.45);
+  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(calc(var(--translateZ) + 30px)) scale(1.08);
+  z-index: 10;
+}
+
+.cert-carousel-card .img {
   width: 100%;
   height: 100%;
+  position: relative;
   overflow: hidden;
+  background: #080d1a radial-gradient(circle,
+      rgba(var(--color-card), 0.15) 0%,
+      rgba(var(--color-card), 0.4) 80%,
+      rgba(var(--color-card), 0.7) 100%);
 }
 
-/* UI Overlays */
-.cert-overlay-title {
+.cert-carousel-card .img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.65;
+  transition: opacity 0.3s ease, transform 0.5s ease;
+}
+
+.cert-carousel-card:hover .img img {
+  opacity: 0.95;
+  transform: scale(1.05);
+}
+
+/* Card details overlay */
+.cert-carousel-overlay {
   position: absolute;
-  top: 3vw;
-  left: 3vw;
-  z-index: 50;
-  pointer-events: none;
-  mix-blend-mode: difference;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10, 14, 26, 0.95) 0%, rgba(10, 14, 26, 0.5) 50%, rgba(10, 14, 26, 0.15) 100%);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  text-align: left;
+  opacity: 0.85;
+  transition: opacity 0.3s ease, background 0.3s ease;
+}
+
+.cert-carousel-card:hover .cert-carousel-overlay {
+  opacity: 1;
+  background: linear-gradient(to top, rgba(10, 14, 26, 0.98) 0%, rgba(10, 14, 26, 0.6) 60%, rgba(10, 14, 26, 0.2) 100%);
+}
+
+.cert-carousel-provider {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gold-400);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.cert-carousel-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.25;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cert-carousel-date {
+  font-size: 0.65rem;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Adjust title overlays for new carousel design */
+.cert-overlay-title {
+  text-align: center;
+  margin-bottom: 30px;
+  z-index: 10;
 }
 
 .cert-overlay-title h1 {
-  font-family: 'Inter', sans-serif;
-  font-weight: 900;
-  text-transform: uppercase;
-  color: #fff;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
-  font-size: clamp(2rem, 5vw, 4.5rem);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .cert-overlay-title h1 span {
   font-family: monospace;
-  font-size: 0.45em;
-  vertical-align: top;
-  position: relative;
-  top: 0.4em;
-  margin-left: 8px;
+  font-size: 0.5em;
+  vertical-align: super;
   color: var(--gold-500);
+  margin-left: 6px;
 }
 
 .cert-overlay-scroll {
-  position: absolute;
-  bottom: 3vw;
-  right: 3vw;
-  z-index: 50;
   font-family: monospace;
   font-size: 0.75rem;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
-  animation: surfPulse 2s ease-in-out infinite;
-}
-
-@keyframes surfPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
-}
-
-/* 3D Scene */
-.scene-container {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 2000px;
-  perspective-origin: 10% 10%;
-  pointer-events: auto;
-}
-
-.animated-track {
-  position: relative;
-  width: 0;
-  height: 0;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-/* 3D Cards */
-.cert-surfer-card {
-  position: absolute;
-  width: 300px;
-  height: 400px;
-  background: #111;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transform-style: preserve-3d;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform;
-  display: block;
-  text-decoration: none;
-}
-
-.cert-surfer-card:hover,
-.cert-surfer-card.active {
-  border-color: var(--gold-500);
-  box-shadow: 0 20px 50px rgba(212, 168, 83, 0.2), 0 0 30px rgba(212, 168, 83, 0.1);
-}
-
-.cert-card-num {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
-  color: #fff;
-  font-family: monospace;
-  font-size: 0.8rem;
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
-}
-
-.cert-surfer-card:hover .cert-card-num,
-.cert-surfer-card.active .cert-card-num {
-  opacity: 1;
-  color: var(--gold-400);
-}
-
-.cert-card-image {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  filter: brightness(0.65) contrast(1.05);
-  transition: filter 0.4s ease, transform 0.4s ease;
-}
-
-.cert-surfer-card:hover .cert-card-image,
-.cert-surfer-card.active .cert-card-image {
-  filter: brightness(1) contrast(1);
-}
-
-.cert-card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.cert-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 40%, transparent 100%);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  pointer-events: none;
-}
-
-.cert-surfer-card:hover .cert-card-overlay,
-.cert-surfer-card.active .cert-card-overlay {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.cert-card-overlay h3 {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.3;
-  margin-bottom: 6px;
-  letter-spacing: -0.01em;
-}
-
-.cert-card-overlay .provider {
-  font-size: 0.85rem;
-  color: var(--gold-400);
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.cert-card-overlay .date {
-  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
-  font-family: monospace;
+  margin-bottom: 15px;
+  z-index: 10;
+  animation: surfPulse 2s ease-in-out infinite;
 }
 
 /* Lightbox Modal */
@@ -2303,6 +2318,7 @@ ul {
 
 .form-group input,
 .form-group textarea {
+  display: block;
   width: 100%;
   padding: 16px 0;
   font-family: 'Inter', sans-serif;
@@ -2316,10 +2332,6 @@ ul {
   resize: none;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
-  border-bottom-color: var(--accent);
-}
 
 .form-group label {
   position: absolute;
@@ -2347,19 +2359,9 @@ ul {
   color: transparent;
 }
 
-.input-underline {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--accent);
-  transition: width 0.4s var(--ease-out-expo);
-}
-
-.form-group input:focus~.input-underline,
-.form-group textarea:focus~.input-underline {
-  width: 100%;
+.form-group input:focus,
+.form-group textarea:focus {
+  border-bottom-color: var(--accent);
 }
 
 .btn-send {
@@ -2407,89 +2409,171 @@ ul {
   background: linear-gradient(180deg, var(--navy-800), var(--navy-900));
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
 }
 
 .contact-info-panel h3 {
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.contact-info-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 12px 0;
-  transition: all 0.3s ease;
-  border-radius: 8px;
-}
-
-.contact-info-row:hover {
-  transform: translateX(6px);
-}
-
-.contact-info-row svg {
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
-  color: var(--accent);
-  margin-top: 2px;
-  transition: color 0.3s ease;
-}
-
-.contact-info-row:hover svg {
-  color: var(--accent-light);
-  filter: drop-shadow(0 0 6px rgba(212, 168, 83, 0.4));
-}
-
-.info-label {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
-.contact-info-row a,
-.contact-info-row p {
-  font-size: 0.92rem;
+.contact-info-subtitle {
+  font-size: 0.95rem;
   color: var(--text-secondary);
+  max-width: 320px;
+  margin-bottom: 24px;
   line-height: 1.5;
 }
 
-.contact-info-row a:hover {
-  color: var(--accent);
-}
-
-.contact-socials {
+.contact-social-grid {
   display: flex;
-  gap: 12px;
-  margin-top: auto;
+  flex-direction: column;
+  gap: 0.8em;
 }
 
-.contact-social-icon {
+.contact-social-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.8em;
+  transform-style: preserve-3d;
+  perspective: 300px;
+}
+
+.contact-card {
+  width: 110px;
+  height: 110px;
+  outline: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.02);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(212, 168, 83, 0.1);
-  color: var(--accent);
-  transition: all 0.3s var(--ease-spring);
+  position: relative;
+  box-shadow:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.05),
+    inset -2px -2px 3px rgba(0, 0, 0, 0.3),
+    3px 3px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  text-decoration: none;
 }
 
-.contact-social-icon svg {
-  width: 20px;
-  height: 20px;
+/* Specific Border Radii for Folding Square Effect */
+.contact-card.card1 {
+  border-radius: 90px 8px 8px 8px;
+  transform-origin: 100% 100%;
 }
 
-.contact-social-icon:hover {
-  background: var(--accent);
-  color: var(--navy-950);
-  transform: translateY(-3px);
+.contact-card.card2 {
+  border-radius: 8px 90px 8px 8px;
+  transform-origin: 0% 100%;
+}
+
+.contact-card.card3 {
+  border-radius: 8px 8px 8px 90px;
+  transform-origin: 100% 0%;
+}
+
+.contact-card.card4 {
+  border-radius: 8px 8px 90px 8px;
+  transform-origin: 0% 0%;
+}
+
+/* Icon placement offsets based on border radii curves */
+.contact-card svg {
+  width: 32px;
+  height: 32px;
+  transition: transform 0.3s ease, fill 0.3s ease, color 0.3s ease;
+}
+
+.contact-card.card1 svg {
+  margin-top: 1.6em;
+  margin-left: 1.3em;
+  fill: #0077b5; /* LinkedIn Blue by default */
+}
+
+.contact-card.card2 svg {
+  margin-top: 1.6em;
+  margin-left: -1em;
+  fill: #ffffff; /* GitHub White by default */
+}
+
+.contact-card.card3 svg {
+  margin-top: -0.7em;
+  margin-left: 1.3em;
+  color: var(--accent); /* Email Gold by default */
+}
+
+.contact-card.card4 svg {
+  margin-top: -1em;
+  margin-left: -1.3em;
+  color: #4caf50; /* Phone Green by default */
+}
+
+/* Hover Actions & Translations */
+.contact-card:hover {
+  cursor: pointer;
+  background: rgba(212, 168, 83, 0.05);
+}
+
+.contact-card.card1:hover {
+  transform: translate(-6px, -6px) rotate(-2deg);
+  box-shadow:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.1),
+    -4px -4px 15px rgba(0, 119, 181, 0.3),
+    4px 4px 15px rgba(0, 0, 0, 0.4);
+}
+.contact-card.card1:hover svg {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(0, 119, 181, 0.6));
+}
+
+.contact-card.card2:hover {
+  transform: translate(6px, -6px) rotate(2deg);
+  box-shadow:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.1),
+    4px -4px 15px rgba(255, 255, 255, 0.2),
+    -4px 4px 15px rgba(0, 0, 0, 0.4);
+}
+.contact-card.card2:hover svg {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+}
+
+.contact-card.card3:hover {
+  transform: translate(-6px, 6px) rotate(2deg);
+  box-shadow:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.1),
+    -4px 4px 15px rgba(212, 168, 83, 0.3),
+    4px -4px 15px rgba(0, 0, 0, 0.4);
+}
+.contact-card.card3:hover svg {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(212, 168, 83, 0.6));
+}
+
+.contact-card.card4:hover {
+  transform: translate(6px, 6px) rotate(-2deg);
+  box-shadow:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.1),
+    4px 4px 15px rgba(76, 175, 80, 0.3),
+    -4px -4px 15px rgba(0, 0, 0, 0.4);
+}
+.contact-card.card4:hover svg {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.6));
+}
+
+/* Active Press States */
+.contact-card:active {
+  box-shadow:
+    inset 4px 4px 8px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 3px rgba(255, 255, 255, 0.05);
+  transform: translate(0, 0) !important;
 }
 
 /* Slide-in from bottom corners */
@@ -2836,19 +2920,30 @@ ul {
 
 /* ═══════════════════════════ WEBGL PLASMA READABILITY OVERLAYS ═══════════════════════════ */
 /* Semi-transparent navbar overlay */
-header, .navbar, .navbar.scrolled {
+header,
+.navbar,
+.navbar.scrolled {
   background: rgba(10, 25, 41, 0.55) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
 }
 
 /* Semi-transparent cards overlay for readability */
-.timeline-item, .skill-cat, .achv-card, .contact-box,
-.exp-card, .edu-card, .skill-category-card, .achievement-card, .contact-form-panel, .contact-info-panel, .mv-card {
+.timeline-item,
+.skill-cat,
+.achv-card,
+.contact-box,
+.exp-card,
+.edu-card,
+.skill-category-card,
+.achievement-card,
+.contact-form-panel,
+.contact-info-panel,
+.mv-card {
   background: rgba(10, 25, 41, 0.72) !important;
 }
 
 /* Keep the card headers and sub-sections clean with transparent bg to let the card bg rule work */
 .exp-card-left {
   background: transparent !important;
-}
+}

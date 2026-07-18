@@ -364,140 +364,158 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 19, image: "Cert/ms.png", title: "Getting Started with Microsoft Excel", provider: "Coursera Project Network", date: "June 2025" }
   ];
 
-  const animatedTrack = document.getElementById('animatedTrack');
+  const certCarouselInner = document.getElementById('certCarouselInner');
   const certSection = document.getElementById('certifications');
-  
-  if (animatedTrack && certSection) {
-    // Dynamic generation of cards (no duplication for clean linear surfer)
+
+  if (certCarouselInner && certSection) {
+    const cardColors = [
+      '142, 249, 252',
+      '142, 252, 204',
+      '142, 252, 157',
+      '215, 252, 142',
+      '252, 252, 142',
+      '252, 208, 142',
+      '252, 142, 142',
+      '252, 142, 239',
+      '204, 142, 252',
+      '142, 202, 252'
+    ];
+
+    // Dynamic generation of cards
     certificates.forEach((item, index) => {
-      const card = document.createElement('a');
-      card.href = item.image;
-      card.target = '_blank';
-      card.className = 'cert-surfer-card';
-      
-      // Index formatted as 01-19
-      const numString = String(index + 1).padStart(2, '0');
-      
+      const card = document.createElement('div');
+      card.className = 'cert-carousel-card';
+      const color = cardColors[index % cardColors.length];
+      card.style.setProperty('--index', index);
+      card.style.setProperty('--color-card', color);
+
       card.innerHTML = `
-        <div class="cert-card-num">${numString}</div>
-        <div class="cert-card-image">
+        <div class="img">
           <img src="${item.image}" alt="${item.title}" loading="lazy">
-        </div>
-        <div class="cert-card-overlay">
-          <p class="provider">${item.provider}</p>
-          <h3>${item.title}</h3>
-          <p class="date">${item.date}</p>
+          <div class="cert-carousel-overlay">
+            <span class="cert-carousel-provider">${item.provider}</span>
+            <h3 class="cert-carousel-title">${item.title}</h3>
+            <span class="cert-carousel-date">${item.date}</span>
+          </div>
         </div>
       `;
-      
-      // Bind click event to open lightbox instead of opening in a new tab
+
+      // Bind click event to open lightbox modal
       card.addEventListener('click', (e) => {
         e.preventDefault();
         openLightbox(item.image, `${item.title} — ${item.provider}`);
       });
-      
-      animatedTrack.appendChild(card);
+
+      certCarouselInner.appendChild(card);
     });
 
-    // Positions and constants
-    const scrollPerItem = 600;
-    const maxScroll = (certificates.length - 1) * scrollPerItem;
-    
-    // Set section height dynamically to cover all certificates exactly
-    certSection.style.height = `${maxScroll + window.innerHeight}px`;
-    
-    const stepX = 240;
-    const stepY = -84;
-    const stepZ = -288;
-    
-    let mouseX = -10000;
-    let mouseY = -10000;
-    
-    // Update track and cards based on scroll and mouse position
-    function updateSurfer() {
-      const startScroll = certSection.offsetTop;
-      const relativeScroll = window.scrollY - startScroll;
-      
-      // Calculate progress ratio clamped between 0 and 1
-      const progressRatio = Math.max(0, Math.min(1, relativeScroll / maxScroll));
-      
-      const sceneX = -progressRatio * (certificates.length - 1) * stepX;
-      const sceneY = -progressRatio * (certificates.length - 1) * stepY;
-      const sceneZ = -progressRatio * (certificates.length - 1) * stepZ;
-      
-      // Transform track
-      animatedTrack.style.transform = `translate3d(${sceneX}px, ${sceneY}px, ${sceneZ}px)`;
-      
-      const activeIndex = progressRatio * (certificates.length - 1);
-      
-      // Get all cards to calculate distance and adjust scale/opacity/active state
-      const cards = animatedTrack.querySelectorAll('.cert-surfer-card');
-      cards.forEach((card, i) => {
-        const rect = card.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        
-        let scale = 1;
-        
-        if (mouseX !== -10000) {
-          const dist = Math.sqrt(Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2));
-          // Proximity threshold of 400px
-          if (dist < 400) {
-            const factor = 1 - (dist / 400); // 1 at mouse, 0 at 400px
-            scale = 1 + 0.3 * factor; // scale up to 1.3
+    // 3D Carousel rotation logic with mouse dragging & touch swiping
+    const carouselWrapper = document.querySelector('.cert-carousel-wrapper');
+    const carouselInner = certCarouselInner;
+
+    let rotationY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startRotationY = 0;
+    let velocity = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let isHovered = false;
+
+    // Set quantity property on inner container
+    carouselInner.style.setProperty('--quantity', certificates.length);
+
+    // Helper to get client X coordinate
+    function getX(e) {
+      return e.touches ? e.touches[0].clientX : e.clientX;
+    }
+
+    function dragStart(e) {
+      carouselInner.style.transition = 'none';
+      isDragging = true;
+      startX = getX(e);
+      startRotationY = rotationY;
+      lastX = startX;
+      lastTime = performance.now();
+      velocity = 0;
+    }
+
+    function dragMove(e) {
+      if (!isDragging) return;
+
+      // Prevent scrolling while dragging on touch devices
+      if (e.cancelable && e.touches) {
+        e.preventDefault();
+      }
+
+      const currentX = getX(e);
+      const currentTime = performance.now();
+      const deltaX = currentX - startX;
+
+      // Calculate rotation Y
+      const screenMultiplier = 360 / window.innerWidth;
+      rotationY = startRotationY + deltaX * screenMultiplier * 0.45;
+
+      // Calculate velocity for inertia physics
+      const timeDiff = currentTime - lastTime;
+      if (timeDiff > 0) {
+        velocity = ((currentX - lastX) / timeDiff) * 8; // kinetic amplification
+      }
+
+      lastX = currentX;
+      lastTime = currentTime;
+    }
+
+    function dragEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      carouselInner.style.transition = 'transform 0.1s linear';
+    }
+
+    // Event listeners
+    carouselWrapper.addEventListener('mousedown', dragStart);
+    window.addEventListener('mousemove', dragMove);
+    window.addEventListener('mouseup', dragEnd);
+
+    carouselWrapper.addEventListener('touchstart', dragStart, { passive: true });
+    window.addEventListener('touchmove', dragMove, { passive: false });
+    window.addEventListener('touchend', dragEnd);
+
+    // Mouse hover detections
+    carouselWrapper.addEventListener('mouseenter', () => {
+      isHovered = true;
+    });
+    carouselWrapper.addEventListener('mouseleave', () => {
+      isHovered = false;
+    });
+
+    // Kinetic rotation animation loop
+    function updateRotation() {
+      if (isDragging) {
+        // Drag logic handles transform
+      } else {
+        // Apply inertia physics decay
+        rotationY += velocity;
+        velocity *= 0.92; // Friction coefficient
+
+        // Return to slow auto rotation when drag inertia drops
+        if (Math.abs(velocity) < 0.05) {
+          velocity = 0;
+          if (!isHovered) {
+            rotationY += 0.08; // Auto spin speed
           }
         }
-        
-        const baseX = i * stepX;
-        const baseY = i * stepY;
-        const baseZ = i * stepZ;
-        
-        // Calculate distance from active index
-        const delta = i - activeIndex;
-        let opacity = 1;
-        if (delta < 0) {
-          opacity = Math.max(0, 1 + delta / 1.5); // Fades out cards that have passed
-        } else {
-          opacity = Math.max(0, 1 - delta / 5); // Fades out cards far in the distance
-        }
-        
-        const isActive = Math.abs(delta) < 0.45;
-        card.classList.toggle('active', isActive);
-        
-        card.style.opacity = opacity;
-        card.style.pointerEvents = opacity < 0.15 ? 'none' : 'auto';
-        card.style.transform = `translate3d(${baseX}px, ${baseY}px, ${baseZ}px) rotateY(-50deg) scale(${scale})`;
-      });
+      }
+
+      // Compute responsive pitch angle (X axis)
+      const rotateX = window.innerWidth < 480 ? -6 : (window.innerWidth < 768 ? -8 : -10);
+      carouselInner.style.transform = `perspective(2000px) rotateX(${rotateX}deg) rotateY(${rotationY}deg)`;
+
+      requestAnimationFrame(updateRotation);
     }
 
-    // Scroll listener
-    window.addEventListener('scroll', () => {
-      const rect = certSection.getBoundingClientRect();
-      
-      // Only run calculations if certifications section is visible in scroll
-      if (rect.top <= window.innerHeight && rect.bottom >= 0) {
-        requestAnimationFrame(updateSurfer);
-      }
-    });
-    
-    // Mouse tracker
-    const perspectiveContainer = certSection.querySelector('.perspective-container');
-    if (perspectiveContainer) {
-      perspectiveContainer.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        requestAnimationFrame(updateSurfer);
-      });
-      
-      perspectiveContainer.addEventListener('mouseleave', () => {
-        mouseX = -10000;
-        mouseY = -10000;
-        requestAnimationFrame(updateSurfer);
-      });
-    }
-    
-    // Initial call to position cards
-    setTimeout(updateSurfer, 100);
+    // Launch rotation loop
+    updateRotation();
   }
 
   /* ─────────────────────────────────────────────
@@ -507,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const lightboxImg = document.getElementById('lightboxImg');
   const lightboxCaption = document.getElementById('lightboxCaption');
   const lightboxLink = document.getElementById('lightboxLink');
-  
+
   function openLightbox(src, caption) {
     if (!lightbox || !lightboxImg || !lightboxCaption) return;
     lightboxImg.src = src;
@@ -516,25 +534,25 @@ document.addEventListener('DOMContentLoaded', () => {
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden'; // Disable scroll
   }
-  
+
   if (lightbox) {
     const closeBtn = lightbox.querySelector('.lightbox-close');
-    
+
     const closeLightbox = () => {
       lightbox.classList.remove('open');
       document.body.style.overflow = ''; // Restore scroll
     };
-    
+
     if (closeBtn) {
       closeBtn.addEventListener('click', closeLightbox);
     }
-    
+
     lightbox.addEventListener('click', (e) => {
       if (e.target === lightbox || e.target.classList.contains('lightbox-close')) {
         closeLightbox();
       }
     });
-    
+
     // Escape key listener
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && lightbox.classList.contains('open')) {
@@ -865,9 +883,9 @@ void main() {
       gl.ARRAY_BUFFER,
       new Float32Array([
         -1.0, -1.0,
-         1.0, -1.0,
-        -1.0,  1.0,
-         1.0,  1.0,
+        1.0, -1.0,
+        -1.0, 1.0,
+        1.0, 1.0,
       ]),
       gl.STATIC_DRAW
     );
@@ -886,7 +904,7 @@ void main() {
     const uSparkle = gl.getUniformLocation(program, 'u_sparkle');
     const uVignette = gl.getUniformLocation(program, 'u_vignette');
     const uOpacity = gl.getUniformLocation(program, 'u_opacity');
-    
+
     const uDarkA = gl.getUniformLocation(program, 'u_darkA');
     const uDarkB = gl.getUniformLocation(program, 'u_darkB');
     const uDarkC = gl.getUniformLocation(program, 'u_darkC');
@@ -971,9 +989,9 @@ void main() {
   /* ─────────────────────────────────────────────
      CERTIFICATE MODAL — Bold Analytics
      ───────────────────────────────────────────── */
-  const certModal        = document.getElementById('certModal');
-  const openCertBtn      = document.getElementById('openCertModal');
-  const closeCertBtn     = document.getElementById('closeCertModal');
+  const certModal = document.getElementById('certModal');
+  const openCertBtn = document.getElementById('openCertModal');
+  const closeCertBtn = document.getElementById('closeCertModal');
   const certModalBackdrop = document.getElementById('certModalBackdrop');
 
   function openCert() {
@@ -990,15 +1008,15 @@ void main() {
     openCertBtn.addEventListener('click', openCert);
     openCertBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openCert(); });
   }
-  if (closeCertBtn)      closeCertBtn.addEventListener('click', closeCert);
+  if (closeCertBtn) closeCertBtn.addEventListener('click', closeCert);
   if (certModalBackdrop) certModalBackdrop.addEventListener('click', closeCert);
 
   /* ─────────────────────────────────────────────
      CERTIFICATE MODAL — Prodigy Infotech
      ───────────────────────────────────────────── */
-  const prodigyCertModal         = document.getElementById('prodigyCertModal');
-  const openProdigyCertBtn       = document.getElementById('openProdigyCertModal');
-  const closeProdigyCertBtn      = document.getElementById('closeProdigyCertModal');
+  const prodigyCertModal = document.getElementById('prodigyCertModal');
+  const openProdigyCertBtn = document.getElementById('openProdigyCertModal');
+  const closeProdigyCertBtn = document.getElementById('closeProdigyCertModal');
   const prodigyCertModalBackdrop = document.getElementById('prodigyCertModalBackdrop');
 
   function openProdigyCert() {
@@ -1015,12 +1033,12 @@ void main() {
     openProdigyCertBtn.addEventListener('click', openProdigyCert);
     openProdigyCertBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openProdigyCert(); });
   }
-  if (closeProdigyCertBtn)      closeProdigyCertBtn.addEventListener('click', closeProdigyCert);
+  if (closeProdigyCertBtn) closeProdigyCertBtn.addEventListener('click', closeProdigyCert);
   if (prodigyCertModalBackdrop) prodigyCertModalBackdrop.addEventListener('click', closeProdigyCert);
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      if (certModal && certModal.classList.contains('open'))         closeCert();
+      if (certModal && certModal.classList.contains('open')) closeCert();
       if (prodigyCertModal && prodigyCertModal.classList.contains('open')) closeProdigyCert();
     }
   });
