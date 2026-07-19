@@ -343,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
      12. CERTIFICATIONS — Collection Surfer 3D Showcase
      ───────────────────────────────────────────── */
   const certificates = [
+    { id: 20, image: "Cert/webnova_2026.png", title: "Winner — Webnova 2026 (National Hackathon)", provider: "IMS Engineering College & HackerRank Campus Crew", date: "2026" },
     { id: 1, image: "Cert/Certificate_isro.png", title: "Geodata Processing using Python and Machine Learning", provider: "ISRO", date: "February 2026" },
     { id: 2, image: "Cert/Ai.png", title: "AI Unleashed Bootcamp on Machine Learning to Deep Neural Network", provider: "AI Spark Society, MMMUT", date: "October 2025" },
     { id: 3, image: "Cert/Ankesh_cert.png", title: "Three-Day Hands-on Workshop 'PROMPTOPS' 26", provider: "CSSE, MMMUT", date: "February 2026" },
@@ -534,6 +535,19 @@ document.addEventListener('DOMContentLoaded', () => {
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden'; // Disable scroll
   }
+
+  // Click listener for achievements certificates
+  const clickableCerts = document.querySelectorAll('.clickable-cert');
+  clickableCerts.forEach(cert => {
+    cert.addEventListener('click', (e) => {
+      e.preventDefault();
+      const src = cert.getAttribute('data-cert-src');
+      const caption = cert.getAttribute('data-cert-caption');
+      if (src) {
+        openLightbox(src, caption || 'Certificate');
+      }
+    });
+  });
 
   if (lightbox) {
     const closeBtn = lightbox.querySelector('.lightbox-close');

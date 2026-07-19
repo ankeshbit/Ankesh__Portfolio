@@ -2190,6 +2190,27 @@ ul {
   position: relative;
 }
 
+.ach-image-wrapper.clickable-cert {
+  cursor: pointer;
+}
+
+.ach-zoom-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: #fff;
+  z-index: 2;
+}
+
+.ach-image-wrapper.clickable-cert:hover .ach-zoom-overlay {
+  opacity: 1;
+}
+
 .ach-image {
   width: 100%;
   height: 100%;
