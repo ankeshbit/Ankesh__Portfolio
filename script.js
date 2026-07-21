@@ -362,7 +362,9 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 16, image: "Cert/ewoc.png", title: "Elite Coders Winter of Code Contributor", provider: "Elite Coders Winter of Code", date: "2025" },
     { id: 17, image: "Cert/idea.png", title: "Idea Presentation Certificate of Participation", provider: "MANIT, Bhopal", date: "N/A" },
     { id: 18, image: "Cert/meta.png", title: "Introduction to Front-End Development", provider: "Meta", date: "December 2025" },
-    { id: 19, image: "Cert/ms.png", title: "Getting Started with Microsoft Excel", provider: "Coursera Project Network", date: "June 2025" }
+    { id: 19, image: "Cert/ms.png", title: "Getting Started with Microsoft Excel", provider: "Coursera Project Network", date: "June 2025" },
+    { id: 21, image: "Cert/Vibe2ship.png", title: "Vibe2Ship — India's Biggest Vibe Coding Hackathon", provider: "Coding Ninjas & Google for Developers", date: "2026" },
+    { id: 22, image: "Internship_cert/Alfido_tech.png", title: "Artificial Intelligence Internship Certificate", provider: "Alfido Tech", date: "May 2026 – July 2026" }
   ];
 
   const certCarouselInner = document.getElementById('certCarouselInner');
@@ -1050,12 +1052,43 @@ void main() {
   if (closeProdigyCertBtn) closeProdigyCertBtn.addEventListener('click', closeProdigyCert);
   if (prodigyCertModalBackdrop) prodigyCertModalBackdrop.addEventListener('click', closeProdigyCert);
 
+  /* ─────────────────────────────────────────────
+     CERTIFICATE MODAL — Alfido Tech
+     ───────────────────────────────────────────── */
+  const alfidoCertModal = document.getElementById('alfidoCertModal');
+  const openAlfidoCertBtn = document.getElementById('openAlfidoCertModal');
+  const closeAlfidoCertBtn = document.getElementById('closeAlfidoCertModal');
+  const alfidoCertModalBackdrop = document.getElementById('alfidoCertModalBackdrop');
+
+  function openAlfidoCert() {
+    if (alfidoCertModal) {
+      alfidoCertModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeAlfidoCert() {
+    if (alfidoCertModal) {
+      alfidoCertModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (openAlfidoCertBtn) {
+    openAlfidoCertBtn.addEventListener('click', openAlfidoCert);
+    openAlfidoCertBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openAlfidoCert(); });
+  }
+  if (closeAlfidoCertBtn) closeAlfidoCertBtn.addEventListener('click', closeAlfidoCert);
+  if (alfidoCertModalBackdrop) alfidoCertModalBackdrop.addEventListener('click', closeAlfidoCert);
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (certModal && certModal.classList.contains('open')) closeCert();
       if (prodigyCertModal && prodigyCertModal.classList.contains('open')) closeProdigyCert();
+      if (alfidoCertModal && alfidoCertModal.classList.contains('open')) closeAlfidoCert();
     }
   });
 
 });
+
 
