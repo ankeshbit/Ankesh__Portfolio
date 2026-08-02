@@ -396,10 +396,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Helper: fill a track with items + a duplicate set for seamless loop
   function fillTrack(trackEl, items) {
-    // Original set
+    // Original set (accessible to screen readers and keyboard focus)
     items.forEach(item => trackEl.appendChild(buildCertCard(item)));
-    // Duplicate set (seamless infinite scroll)
-    items.forEach(item => trackEl.appendChild(buildCertCard(item)));
+    // Duplicate set (visual seamless loop only — marked aria-hidden="true" and tabindex="-1")
+    items.forEach(item => {
+      const dupCard = buildCertCard(item);
+      dupCard.setAttribute('aria-hidden', 'true');
+      dupCard.setAttribute('tabindex', '-1');
+      trackEl.appendChild(dupCard);
+    });
   }
 
   const track1 = document.getElementById('certTrack1');
