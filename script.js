@@ -412,8 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (track1 && track2) {
     const mid = Math.ceil(certificates.length / 2);
-    const row1 = certificates.slice(0, mid + 1);          // first 12
-    const row2 = certificates.slice(mid - 1).reverse();   // last 12, reversed for variety
+    const row1 = certificates.slice(0, mid);
+    const row2 = certificates.slice(mid).reverse();
 
     fillTrack(track1, row1);
     fillTrack(track2, row2);
