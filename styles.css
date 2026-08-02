@@ -1866,9 +1866,16 @@ ul {
   animation: marqueeRight 38s linear infinite;
 }
 
-/* Pause on wrapper hover */
-.cert-marquee-wrapper:hover .cert-marquee-track {
+/* Pause on wrapper hover or focus-within */
+.cert-marquee-wrapper:hover .cert-marquee-track,
+.cert-marquee-wrapper:focus-within .cert-marquee-track {
   animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cert-marquee-track {
+    animation: none;
+  }
 }
 
 @keyframes marqueeLeft {
@@ -1898,11 +1905,13 @@ ul {
               box-shadow 0.35s ease;
 }
 
-.cert-mq-card:hover {
+.cert-mq-card:hover,
+.cert-mq-card:focus-visible {
   transform: translateY(-8px) scale(1.03);
   border-color: rgba(212, 168, 83, 0.6);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45),
               0 0 24px rgba(212, 168, 83, 0.18);
+  outline: none;
   z-index: 5;
 }
 
@@ -1916,7 +1925,8 @@ ul {
   transition: opacity 0.35s ease, transform 0.5s ease;
 }
 
-.cert-mq-card:hover img {
+.cert-mq-card:hover img,
+.cert-mq-card:focus-visible img {
   opacity: 1;
   transform: scale(1.05);
 }
@@ -1939,7 +1949,8 @@ ul {
   transition: opacity 0.3s ease;
 }
 
-.cert-mq-card:hover .cert-mq-overlay {
+.cert-mq-card:hover .cert-mq-overlay,
+.cert-mq-card:focus-visible .cert-mq-overlay {
   opacity: 1;
 }
 
@@ -1988,7 +1999,8 @@ ul {
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.cert-mq-card:hover::after {
+.cert-mq-card:hover::after,
+.cert-mq-card:focus-visible::after {
   opacity: 1;
   transform: translateY(0);
 }

@@ -371,6 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function buildCertCard(item) {
     const card = document.createElement('div');
     card.className = 'cert-mq-card';
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
     card.innerHTML = `
       <img src="${item.image}" alt="${item.title}" loading="lazy">
       <div class="cert-mq-overlay">
@@ -379,8 +381,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="cert-mq-date">${item.date}</span>
       </div>
     `;
-    card.addEventListener('click', () => {
+    const handleOpen = () => {
       openLightbox(item.image, `${item.title} — ${item.provider}`);
+    };
+    card.addEventListener('click', handleOpen);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleOpen();
+      }
     });
     return card;
   }
