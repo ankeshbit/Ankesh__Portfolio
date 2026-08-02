@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.head.appendChild(curtainStyle);
 
   /* ─────────────────────────────────────────────
-     12. CERTIFICATIONS — Collection Surfer 3D Showcase
+     12. CERTIFICATIONS — Infinite Marquee Showcase
      ───────────────────────────────────────────── */
   const certificates = [
     { id: 20, image: "Cert/webnova_2026.png", title: "Winner — Webnova 2026 (National Hackathon)", provider: "IMS Engineering College & HackerRank Campus Crew", date: "2026" },
@@ -367,158 +367,42 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 22, image: "Internship_cert/Alfido_tech.png", title: "Artificial Intelligence Internship Certificate", provider: "Alfido Tech", date: "May 2026 – July 2026" }
   ];
 
-  const certCarouselInner = document.getElementById('certCarouselInner');
-  const certSection = document.getElementById('certifications');
-
-  if (certCarouselInner && certSection) {
-    const cardColors = [
-      '142, 249, 252',
-      '142, 252, 204',
-      '142, 252, 157',
-      '215, 252, 142',
-      '252, 252, 142',
-      '252, 208, 142',
-      '252, 142, 142',
-      '252, 142, 239',
-      '204, 142, 252',
-      '142, 202, 252'
-    ];
-
-    // Dynamic generation of cards
-    certificates.forEach((item, index) => {
-      const card = document.createElement('div');
-      card.className = 'cert-carousel-card';
-      const color = cardColors[index % cardColors.length];
-      card.style.setProperty('--index', index);
-      card.style.setProperty('--color-card', color);
-
-      card.innerHTML = `
-        <div class="img">
-          <img src="${item.image}" alt="${item.title}" loading="lazy">
-          <div class="cert-carousel-overlay">
-            <span class="cert-carousel-provider">${item.provider}</span>
-            <h3 class="cert-carousel-title">${item.title}</h3>
-            <span class="cert-carousel-date">${item.date}</span>
-          </div>
-        </div>
-      `;
-
-      // Bind click event to open lightbox modal
-      card.addEventListener('click', (e) => {
-        e.preventDefault();
-        openLightbox(item.image, `${item.title} — ${item.provider}`);
-      });
-
-      certCarouselInner.appendChild(card);
+  // Helper: build a single cert card element
+  function buildCertCard(item) {
+    const card = document.createElement('div');
+    card.className = 'cert-mq-card';
+    card.innerHTML = `
+      <img src="${item.image}" alt="${item.title}" loading="lazy">
+      <div class="cert-mq-overlay">
+        <span class="cert-mq-provider">${item.provider}</span>
+        <h3 class="cert-mq-title">${item.title}</h3>
+        <span class="cert-mq-date">${item.date}</span>
+      </div>
+    `;
+    card.addEventListener('click', () => {
+      openLightbox(item.image, `${item.title} — ${item.provider}`);
     });
+    return card;
+  }
 
-    // 3D Carousel rotation logic with mouse dragging & touch swiping
-    const carouselWrapper = document.querySelector('.cert-carousel-wrapper');
-    const carouselInner = certCarouselInner;
+  // Helper: fill a track with items + a duplicate set for seamless loop
+  function fillTrack(trackEl, items) {
+    // Original set
+    items.forEach(item => trackEl.appendChild(buildCertCard(item)));
+    // Duplicate set (seamless infinite scroll)
+    items.forEach(item => trackEl.appendChild(buildCertCard(item)));
+  }
 
-    let rotationY = 0;
-    let isDragging = false;
-    let startX = 0;
-    let startRotationY = 0;
-    let velocity = 0;
-    let lastX = 0;
-    let lastTime = 0;
-    let isHovered = false;
+  const track1 = document.getElementById('certTrack1');
+  const track2 = document.getElementById('certTrack2');
 
-    // Set quantity property on inner container
-    carouselInner.style.setProperty('--quantity', certificates.length);
+  if (track1 && track2) {
+    const mid = Math.ceil(certificates.length / 2);
+    const row1 = certificates.slice(0, mid + 1);          // first 12
+    const row2 = certificates.slice(mid - 1).reverse();   // last 12, reversed for variety
 
-    // Helper to get client X coordinate
-    function getX(e) {
-      return e.touches ? e.touches[0].clientX : e.clientX;
-    }
-
-    function dragStart(e) {
-      carouselInner.style.transition = 'none';
-      isDragging = true;
-      startX = getX(e);
-      startRotationY = rotationY;
-      lastX = startX;
-      lastTime = performance.now();
-      velocity = 0;
-    }
-
-    function dragMove(e) {
-      if (!isDragging) return;
-
-      // Prevent scrolling while dragging on touch devices
-      if (e.cancelable && e.touches) {
-        e.preventDefault();
-      }
-
-      const currentX = getX(e);
-      const currentTime = performance.now();
-      const deltaX = currentX - startX;
-
-      // Calculate rotation Y
-      const screenMultiplier = 360 / window.innerWidth;
-      rotationY = startRotationY + deltaX * screenMultiplier * 0.45;
-
-      // Calculate velocity for inertia physics
-      const timeDiff = currentTime - lastTime;
-      if (timeDiff > 0) {
-        velocity = ((currentX - lastX) / timeDiff) * 8; // kinetic amplification
-      }
-
-      lastX = currentX;
-      lastTime = currentTime;
-    }
-
-    function dragEnd() {
-      if (!isDragging) return;
-      isDragging = false;
-      carouselInner.style.transition = 'transform 0.1s linear';
-    }
-
-    // Event listeners
-    carouselWrapper.addEventListener('mousedown', dragStart);
-    window.addEventListener('mousemove', dragMove);
-    window.addEventListener('mouseup', dragEnd);
-
-    carouselWrapper.addEventListener('touchstart', dragStart, { passive: true });
-    window.addEventListener('touchmove', dragMove, { passive: false });
-    window.addEventListener('touchend', dragEnd);
-
-    // Mouse hover detections
-    carouselWrapper.addEventListener('mouseenter', () => {
-      isHovered = true;
-    });
-    carouselWrapper.addEventListener('mouseleave', () => {
-      isHovered = false;
-    });
-
-    // Kinetic rotation animation loop
-    function updateRotation() {
-      if (isDragging) {
-        // Drag logic handles transform
-      } else {
-        // Apply inertia physics decay
-        rotationY += velocity;
-        velocity *= 0.92; // Friction coefficient
-
-        // Return to slow auto rotation when drag inertia drops
-        if (Math.abs(velocity) < 0.05) {
-          velocity = 0;
-          if (!isHovered) {
-            rotationY += 0.08; // Auto spin speed
-          }
-        }
-      }
-
-      // Compute responsive pitch angle (X axis)
-      const rotateX = window.innerWidth < 480 ? -6 : (window.innerWidth < 768 ? -8 : -10);
-      carouselInner.style.transform = `perspective(2000px) rotateX(${rotateX}deg) rotateY(${rotationY}deg)`;
-
-      requestAnimationFrame(updateRotation);
-    }
-
-    // Launch rotation loop
-    updateRotation();
+    fillTrack(track1, row1);
+    fillTrack(track2, row2);
   }
 
   /* ─────────────────────────────────────────────

@@ -1816,217 +1816,208 @@ ul {
   transform: scale(1);
 }
 
-/* ═══════════════════════════ PAGE 7: CERTIFICATIONS (Collection Surfer 3D) ═══════════════════════════ */
+/* ═══════════════════════════ PAGE 7: CERTIFICATIONS (Marquee) ═══════════════════════════ */
 .section-certifications {
   position: relative;
-  height: 100vh;
-  min-height: 700px;
-  background: #06090e;
-  /* Match theme dark */
-  margin: 0;
-  padding: 80px 0 !important;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  background: var(--bg-secondary);
   overflow: hidden;
+  padding-bottom: 80px !important;
 }
 
-.cert-carousel-wrapper {
-  width: 100%;
-  height: 60%;
-  min-height: 400px;
+/* ── Marquee wrapper (one row) ── */
+.cert-marquee-wrapper {
   position: relative;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-  cursor: grab;
-  user-select: none;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 20px;
+  /* fade edges */
 }
 
-.cert-carousel-wrapper:active {
-  cursor: grabbing;
-}
-
-.cert-carousel-inner {
-  --w: 280px;
-  --h: 200px;
-  --translateZ: 850px;
-  --rotateX: -10deg;
-  --perspective: 2000px;
+/* Left & right fade masks */
+.cert-marquee-fade {
   position: absolute;
-  width: var(--w);
-  height: var(--h);
+  top: 0;
+  bottom: 0;
+  width: 120px;
   z-index: 2;
-  transform-style: preserve-3d;
-  transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0deg);
-  will-change: transform;
-  transition: transform 0.1s linear;
-  /* subtle smoothing */
+  pointer-events: none;
 }
 
-/* Responsiveness for 3D Carousel */
-@media (max-width: 1200px) {
-  .cert-carousel-inner {
-    --w: 230px;
-    --h: 165px;
-    --translateZ: 700px;
-  }
+.cert-marquee-fade--left {
+  left: 0;
+  background: linear-gradient(to right, var(--bg-secondary) 0%, transparent 100%);
 }
 
-@media (max-width: 768px) {
-  .cert-carousel-inner {
-    --w: 170px;
-    --h: 120px;
-    --translateZ: 520px;
-    --rotateX: -8deg;
-  }
-
-  .section-certifications {
-    min-height: 550px;
-  }
+.cert-marquee-fade--right {
+  right: 0;
+  background: linear-gradient(to left, var(--bg-secondary) 0%, transparent 100%);
 }
 
-@media (max-width: 480px) {
-  .cert-carousel-inner {
-    --w: 120px;
-    --h: 85px;
-    --translateZ: 380px;
-    --rotateX: -6deg;
-  }
-
-  .section-certifications {
-    min-height: 480px;
-  }
+/* ── Scrolling track ── */
+.cert-marquee-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: marqueeLeft 40s linear infinite;
+  padding: 12px 0;
 }
 
-.cert-carousel-card {
-  position: absolute;
-  border: 2px solid rgba(var(--color-card), 0.35);
-  border-radius: 12px;
+.cert-marquee-track--reverse {
+  animation: marqueeRight 38s linear infinite;
+}
+
+/* Pause on wrapper hover */
+.cert-marquee-wrapper:hover .cert-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeLeft {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marqueeRight {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* ── Individual cert card ── */
+.cert-mq-card {
+  flex-shrink: 0;
+  width: 280px;
+  height: 195px;
+  border-radius: 14px;
   overflow: hidden;
-  inset: 0;
-  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ));
-  transform-style: preserve-3d;
-  cursor: pointer;
-  background: #101524;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(var(--color-card), 0.1);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  backface-visibility: visible;
-}
-
-.cert-carousel-card:hover {
-  border-color: rgba(var(--color-card), 1);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(var(--color-card), 0.45);
-  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(calc(var(--translateZ) + 30px)) scale(1.08);
-  z-index: 10;
-}
-
-.cert-carousel-card .img {
-  width: 100%;
-  height: 100%;
   position: relative;
-  overflow: hidden;
-  background: #080d1a radial-gradient(circle,
-      rgba(var(--color-card), 0.15) 0%,
-      rgba(var(--color-card), 0.4) 80%,
-      rgba(var(--color-card), 0.7) 100%);
+  cursor: pointer;
+  border: 1.5px solid rgba(212, 168, 83, 0.15);
+  background: var(--bg-card);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.35s var(--ease-out-expo),
+              border-color 0.3s ease,
+              box-shadow 0.35s ease;
 }
 
-.cert-carousel-card .img img {
+.cert-mq-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  border-color: rgba(212, 168, 83, 0.6);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45),
+              0 0 24px rgba(212, 168, 83, 0.18);
+  z-index: 5;
+}
+
+/* Cert image */
+.cert-mq-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.65;
-  transition: opacity 0.3s ease, transform 0.5s ease;
+  display: block;
+  opacity: 0.75;
+  transition: opacity 0.35s ease, transform 0.5s ease;
 }
 
-.cert-carousel-card:hover .img img {
-  opacity: 0.95;
+.cert-mq-card:hover img {
+  opacity: 1;
   transform: scale(1.05);
 }
 
-/* Card details overlay */
-.cert-carousel-overlay {
+/* Text overlay gradient */
+.cert-mq-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(10, 14, 26, 0.95) 0%, rgba(10, 14, 26, 0.5) 50%, rgba(10, 14, 26, 0.15) 100%);
-  padding: 16px;
+  background: linear-gradient(
+    to top,
+    rgba(10, 14, 26, 0.97) 0%,
+    rgba(10, 14, 26, 0.55) 50%,
+    rgba(10, 14, 26, 0.05) 100%
+  );
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  align-items: flex-start;
-  text-align: left;
-  opacity: 0.85;
-  transition: opacity 0.3s ease, background 0.3s ease;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
 }
 
-.cert-carousel-card:hover .cert-carousel-overlay {
+.cert-mq-card:hover .cert-mq-overlay {
   opacity: 1;
-  background: linear-gradient(to top, rgba(10, 14, 26, 0.98) 0%, rgba(10, 14, 26, 0.6) 60%, rgba(10, 14, 26, 0.2) 100%);
 }
 
-.cert-carousel-provider {
-  font-size: 0.7rem;
+.cert-mq-provider {
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--gold-400);
   letter-spacing: 1px;
-  margin-bottom: 2px;
+  color: var(--gold-400);
+  margin-bottom: 3px;
 }
 
-.cert-carousel-title {
-  font-size: 0.8rem;
+.cert-mq-title {
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #ffffff;
-  line-height: 1.25;
-  margin-bottom: 4px;
+  color: #fff;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.cert-carousel-date {
-  font-size: 0.65rem;
+.cert-mq-date {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 4px;
   font-family: monospace;
-  color: rgba(255, 255, 255, 0.45);
 }
 
-/* Adjust title overlays for new carousel design */
-.cert-overlay-title {
-  text-align: center;
-  margin-bottom: 30px;
-  z-index: 10;
+/* Click-to-view hint */
+.cert-mq-card::after {
+  content: '🔍 Click to view';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.6rem;
+  background: rgba(212, 168, 83, 0.85);
+  color: #0a0e1a;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.cert-overlay-title h1 {
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  font-weight: 800;
-  margin: 0;
-  line-height: 1.2;
+.cert-mq-card:hover::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.cert-overlay-title h1 span {
-  font-family: monospace;
-  font-size: 0.5em;
-  vertical-align: super;
-  color: var(--gold-500);
-  margin-left: 6px;
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .cert-mq-card {
+    width: 220px;
+    height: 155px;
+  }
+
+  .cert-marquee-track {
+    gap: 14px;
+  }
+
+  .cert-marquee-fade {
+    width: 60px;
+  }
 }
 
-.cert-overlay-scroll {
-  font-family: monospace;
-  font-size: 0.75rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 15px;
-  z-index: 10;
-  animation: surfPulse 2s ease-in-out infinite;
+@media (max-width: 480px) {
+  .cert-mq-card {
+    width: 175px;
+    height: 125px;
+  }
+
+  .cert-marquee-track {
+    gap: 10px;
+  }
 }
 
 /* Lightbox Modal */
