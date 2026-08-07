@@ -343,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
      12. CERTIFICATIONS — Infinite Marquee Showcase
      ───────────────────────────────────────────── */
   const certificates = [
+    { id: 23, image: "Cert/certificate_tnp.png", title: "The Paradigm Shift — Certificate of Participation", provider: "Training & Placement Cell, MMMUT", date: "August 2026" },
     { id: 20, image: "Cert/webnova_2026.png", title: "Winner — Webnova 2026 (National Hackathon)", provider: "IMS Engineering College & HackerRank Campus Crew", date: "2026" },
     { id: 1, image: "Cert/Certificate_isro.png", title: "Geodata Processing using Python and Machine Learning", provider: "ISRO", date: "February 2026" },
     { id: 2, image: "Cert/Ai.png", title: "AI Unleashed Bootcamp on Machine Learning to Deep Neural Network", provider: "AI Spark Society, MMMUT", date: "October 2025" },
