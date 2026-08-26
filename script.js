@@ -981,11 +981,41 @@ void main() {
   if (closeAlfidoCertBtn) closeAlfidoCertBtn.addEventListener('click', closeAlfidoCert);
   if (alfidoCertModalBackdrop) alfidoCertModalBackdrop.addEventListener('click', closeAlfidoCert);
 
+  /* ─────────────────────────────────────────────
+     PHOTO MODAL — TCS Technology Day
+     ───────────────────────────────────────────── */
+  const tcsPhotoModal = document.getElementById('tcsPhotoModal');
+  const openTCSPhotoBtn = document.getElementById('openTCSPhotoModal');
+  const closeTCSPhotoBtn = document.getElementById('closeTCSPhotoModal');
+  const tcsPhotoModalBackdrop = document.getElementById('tcsPhotoModalBackdrop');
+
+  function openTCSPhoto() {
+    if (tcsPhotoModal) {
+      tcsPhotoModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeTCSPhoto() {
+    if (tcsPhotoModal) {
+      tcsPhotoModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (openTCSPhotoBtn) {
+    openTCSPhotoBtn.addEventListener('click', openTCSPhoto);
+    openTCSPhotoBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openTCSPhoto(); });
+  }
+  if (closeTCSPhotoBtn) closeTCSPhotoBtn.addEventListener('click', closeTCSPhoto);
+  if (tcsPhotoModalBackdrop) tcsPhotoModalBackdrop.addEventListener('click', closeTCSPhoto);
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (certModal && certModal.classList.contains('open')) closeCert();
       if (prodigyCertModal && prodigyCertModal.classList.contains('open')) closeProdigyCert();
       if (alfidoCertModal && alfidoCertModal.classList.contains('open')) closeAlfidoCert();
+      if (tcsPhotoModal && tcsPhotoModal.classList.contains('open')) closeTCSPhoto();
     }
   });
 
