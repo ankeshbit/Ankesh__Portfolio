@@ -343,6 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
      12. CERTIFICATIONS — Infinite Marquee Showcase
      ───────────────────────────────────────────── */
   const certificates = [
+    { id: 24, image: "Cert/ankesh-srivastava.png", title: "GEN-AI CAMP — Certificate of Completion", provider: "AlgoUniversity", date: "2026" },
+    { id: 23, image: "Cert/certificate_tnp.png", title: "The Paradigm Shift — Certificate of Participation", provider: "Training & Placement Cell, MMMUT", date: "August 2026" },
     { id: 20, image: "Cert/webnova_2026.png", title: "Winner — Webnova 2026 (National Hackathon)", provider: "IMS Engineering College & HackerRank Campus Crew", date: "2026" },
     { id: 1, image: "Cert/Certificate_isro.png", title: "Geodata Processing using Python and Machine Learning", provider: "ISRO", date: "February 2026" },
     { id: 2, image: "Cert/Ai.png", title: "AI Unleashed Bootcamp on Machine Learning to Deep Neural Network", provider: "AI Spark Society, MMMUT", date: "October 2025" },
@@ -979,11 +981,41 @@ void main() {
   if (closeAlfidoCertBtn) closeAlfidoCertBtn.addEventListener('click', closeAlfidoCert);
   if (alfidoCertModalBackdrop) alfidoCertModalBackdrop.addEventListener('click', closeAlfidoCert);
 
+  /* ─────────────────────────────────────────────
+     PHOTO MODAL — TCS Technology Day
+     ───────────────────────────────────────────── */
+  const tcsPhotoModal = document.getElementById('tcsPhotoModal');
+  const openTCSPhotoBtn = document.getElementById('openTCSPhotoModal');
+  const closeTCSPhotoBtn = document.getElementById('closeTCSPhotoModal');
+  const tcsPhotoModalBackdrop = document.getElementById('tcsPhotoModalBackdrop');
+
+  function openTCSPhoto() {
+    if (tcsPhotoModal) {
+      tcsPhotoModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeTCSPhoto() {
+    if (tcsPhotoModal) {
+      tcsPhotoModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (openTCSPhotoBtn) {
+    openTCSPhotoBtn.addEventListener('click', openTCSPhoto);
+    openTCSPhotoBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openTCSPhoto(); });
+  }
+  if (closeTCSPhotoBtn) closeTCSPhotoBtn.addEventListener('click', closeTCSPhoto);
+  if (tcsPhotoModalBackdrop) tcsPhotoModalBackdrop.addEventListener('click', closeTCSPhoto);
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (certModal && certModal.classList.contains('open')) closeCert();
       if (prodigyCertModal && prodigyCertModal.classList.contains('open')) closeProdigyCert();
       if (alfidoCertModal && alfidoCertModal.classList.contains('open')) closeAlfidoCert();
+      if (tcsPhotoModal && tcsPhotoModal.classList.contains('open')) closeTCSPhoto();
     }
   });
 
