@@ -343,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
      12. CERTIFICATIONS — Infinite Marquee Showcase
      ───────────────────────────────────────────── */
   const certificates = [
+    { id: 27, image: "Cert/sih_internal_2026.png", title: "Internal Smart India Hackathon (SIH 2026) — Runner Up & Felicitation", provider: "Smart India Hackathon & MMMUT", date: "September 2026" },
     { id: 26, image: "Cert/ecsoc_2026.png", title: "Elite Coders Summer of Code 2026 (ECSoC'26) — Certificate of Participation", provider: "Elite Coders & Unstop", date: "2026" },
     { id: 25, image: "Cert/ismartcomp2026.png", title: "iSmartComp 2026 — Technical & Feedback Committee Volunteer", provider: "IEEE & MMMUT", date: "August 2026" },
     { id: 24, image: "Cert/ankesh-srivastava.png", title: "GEN-AI CAMP — Certificate of Completion", provider: "AlgoUniversity", date: "2026" },
