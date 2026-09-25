@@ -343,6 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
      12. CERTIFICATIONS — Infinite Marquee Showcase
      ───────────────────────────────────────────── */
   const certificates = [
+    { id: 26, image: "Cert/ecsoc_2026.png", title: "Elite Coders Summer of Code 2026 (ECSoC'26) — Certificate of Participation", provider: "Elite Coders & Unstop", date: "2026" },
+    { id: 25, image: "Cert/ismartcomp2026.png", title: "iSmartComp 2026 — Technical & Feedback Committee Volunteer", provider: "IEEE & MMMUT", date: "August 2026" },
     { id: 24, image: "Cert/ankesh-srivastava.png", title: "GEN-AI CAMP — Certificate of Completion", provider: "AlgoUniversity", date: "2026" },
     { id: 23, image: "Cert/certificate_tnp.png", title: "The Paradigm Shift — Certificate of Participation", provider: "Training & Placement Cell, MMMUT", date: "August 2026" },
     { id: 20, image: "Cert/webnova_2026.png", title: "Winner — Webnova 2026 (National Hackathon)", provider: "IMS Engineering College & HackerRank Campus Crew", date: "2026" },
@@ -1010,12 +1012,42 @@ void main() {
   if (closeTCSPhotoBtn) closeTCSPhotoBtn.addEventListener('click', closeTCSPhoto);
   if (tcsPhotoModalBackdrop) tcsPhotoModalBackdrop.addEventListener('click', closeTCSPhoto);
 
+  /* ─────────────────────────────────────────────
+     CERTIFICATE MODAL — iSmartComp 2026
+     ───────────────────────────────────────────── */
+  const ismartCertModal = document.getElementById('ismartCertModal');
+  const openIsmartCertBtn = document.getElementById('openIsmartCertModal');
+  const closeIsmartCertBtn = document.getElementById('closeIsmartCertModal');
+  const ismartCertModalBackdrop = document.getElementById('ismartCertModalBackdrop');
+
+  function openIsmartCert() {
+    if (ismartCertModal) {
+      ismartCertModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeIsmartCert() {
+    if (ismartCertModal) {
+      ismartCertModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (openIsmartCertBtn) {
+    openIsmartCertBtn.addEventListener('click', openIsmartCert);
+    openIsmartCertBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openIsmartCert(); });
+  }
+  if (closeIsmartCertBtn) closeIsmartCertBtn.addEventListener('click', closeIsmartCert);
+  if (ismartCertModalBackdrop) ismartCertModalBackdrop.addEventListener('click', closeIsmartCert);
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (certModal && certModal.classList.contains('open')) closeCert();
       if (prodigyCertModal && prodigyCertModal.classList.contains('open')) closeProdigyCert();
       if (alfidoCertModal && alfidoCertModal.classList.contains('open')) closeAlfidoCert();
       if (tcsPhotoModal && tcsPhotoModal.classList.contains('open')) closeTCSPhoto();
+      if (ismartCertModal && ismartCertModal.classList.contains('open')) closeIsmartCert();
     }
   });
 
