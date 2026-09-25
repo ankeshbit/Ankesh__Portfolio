@@ -15,6 +15,8 @@ const navbar = document.getElementById('navbar');
 const navLinks = document.getElementById('navLinks');
 
 // Application State
+const appStartTime = Date.now();
+const MIN_LOADING_TIME = 900; // ms to ensure smooth pencil animation playback
 let currentUser = null;
 let isUserAdmin = false;
 let isInitialAuthResolved = false;
@@ -301,13 +303,18 @@ function initApp() {
 
     if (!isInitialAuthResolved) {
       isInitialAuthResolved = true;
-      // Dismiss loading screen with smooth fade
-      if (loadingScreen) {
-        loadingScreen.classList.add('hidden');
-        setTimeout(() => {
-          loadingScreen.remove();
-        }, 500);
-      }
+      const elapsed = Date.now() - appStartTime;
+      const remainingDelay = Math.max(0, MIN_LOADING_TIME - elapsed);
+
+      setTimeout(() => {
+        // Dismiss loading screen with smooth fade
+        if (loadingScreen) {
+          loadingScreen.classList.add('hidden');
+          setTimeout(() => {
+            loadingScreen.remove();
+          }, 500);
+        }
+      }, remainingDelay);
     }
 
     handleRoute();
