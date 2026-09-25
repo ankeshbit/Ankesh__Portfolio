@@ -18,33 +18,55 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/opentype.js/dist/opentype.min.js"></script>
 </head>
 
 <body>
   <canvas id="plasma-bg"></canvas>
+
+  <!-- Global Auth Loading Screen -->
+  <div id="auth-loading-screen">
+    <div class="auth-loader-logo">AS</div>
+    <div class="auth-loader-text">Loading portfolio...</div>
+  </div>
+
+  <!-- Authentication Container (/login, /signup, /forgot-password) -->
+  <div id="auth-container" class="hidden"></div>
+
+  <!-- Admin Dashboard Container (/admin) -->
+  <div id="admin-container" class="hidden"></div>
+
   <!-- ═══════════════════════════ NAVBAR ═══════════════════════════ -->
   <nav id="navbar" class="navbar">
-    <a href="#landing" class="nav-logo">AS</a>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
-      <span></span><span></span><span></span>
-    </button>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="#landing">Home</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="#education">Education</a></li>
-      <li><a href="#experience">Experience</a></li>
-      <li><a href="#volunteer">Volunteer</a></li>
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#skills">Skills</a></li>
-      <li><a href="#certifications">Certifications</a></li>
-      <li><a href="#achievements">Achievements</a></li>
-      <li><a href="#contact">Contact</a></li>
-      <li><a href="resume.pdf" target="_blank" download="resume.pdf" class="nav-resume-btn">Resume</a></li>
-    </ul>
+    <div class="navbar-container nav-container">
+      <a href="#landing" class="nav-logo">AS</a>
+      
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#landing">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#education">Education</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#volunteer">Volunteer</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#certifications">Certifications</a></li>
+        <li><a href="#achievements">Achievements</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+
+      <div class="navbar-actions nav-actions" id="navActions">
+        <a href="resume.pdf" target="_blank" download="resume.pdf" class="nav-resume-btn">Resume</a>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </nav>
 
+  <!-- ═══════════════════════════ MAIN PORTFOLIO CONTENT ═══════════════════════════ -->
+  <main id="portfolio-main">
   <!-- ═══════════════════════════ PAGE 1: LANDING ═══════════════════════════ -->
   <section id="landing" class="section section-landing">
     <div class="landing-particles" id="particles"></div>
@@ -905,59 +927,6 @@
   </div>
 </div>
 
-<!-- Project 07: Real-Time Face Detection -->
-<div class="project-card">
-  <div class="project-left slide-in-blur">
-    <span class="project-number">07</span>
-    <h3 class="project-title">Real-Time Face Detection</h3>
-    <p class="project-subtitle">Deep Learning-Based Computer Vision System</p>
-    <span class="project-type-badge">Course Project</span>
-    <a href="https://github.com/ankeshbit/Ankesh_Ai_Project.git" class="project-github-link" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-      </svg>
-      GitHub
-    </a>
-  </div>
-
-  <div class="project-right fade-delay">
-    <p class="project-desc">
-      Developed a real-time face detection system using OpenCV's DNN module and a pre-trained Caffe SSD ResNet-10 model to detect, track, and save faces from live webcam streams.
-    </p>
-
-    <div class="project-outcomes">
-      <div class="outcome-box pop-in" style="--pop: 0s">
-        <span class="outcome-num">1</span>
-        <p>
-          Implemented deep learning-based face detection with confidence thresholds, enabling accurate detection and localization of multiple faces in real time.
-        </p>
-      </div>
-
-      <div class="outcome-box pop-in" style="--pop: 0.15s">
-        <span class="outcome-num">2</span>
-        <p>
-          Displayed live face count, confidence scores, and FPS metrics while rendering bounding boxes on webcam frames for visual feedback.
-        </p>
-      </div>
-
-      <div class="outcome-box pop-in" style="--pop: 0.3s">
-        <span class="outcome-num">3</span>
-        <p>
-          Designed a modular and robust pipeline with automatic face image storage and error handling for easy integration into surveillance and security applications.
-        </p>
-      </div>
-    </div>
-
-    <div class="project-tech">
-      <span class="tech-pill bounce-in" style="--b: 0s">Python</span>
-      <span class="tech-pill bounce-in" style="--b: 0.08s">OpenCV</span>
-      <span class="tech-pill bounce-in" style="--b: 0.16s">NumPy</span>
-      <span class="tech-pill bounce-in" style="--b: 0.24s">Caffe SSD</span>
-      <span class="tech-pill bounce-in" style="--b: 0.32s">Computer Vision</span>
-    </div>
-  </div>
-</div>
-
 <!-- Project 08: Number Guessing Game -->
 <div class="project-card">
   <div class="project-left slide-in-blur">
@@ -1639,8 +1608,10 @@
     </a>
     <div id="lightboxCaption" class="lightbox-caption"></div>
   </div>
+  </main>
 
-  <script src="script.js"></script>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/script.js"></script>
 </body>
 
 </html>
