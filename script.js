@@ -343,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
      12. CERTIFICATIONS — Infinite Marquee Showcase
      ───────────────────────────────────────────── */
   const certificates = [
+    { id: 30, image: "Cert/hackuverse_2026.png", title: "TechTriad — Certificate of Participation", provider: "HackuVerse & Unstop", date: "May 2026" },
     { id: 29, image: "Cert/sih_organizing_team_2026.png", title: "Internal Smart India Hackathon (SIH-2026) — Organizing Team Certificate of Appreciation", provider: "Smart India Hackathon & MMMUT Reso", date: "September 2026" },
     { id: 28, image: "Cert/tcs_tech_day_2026.png", title: "TCS Tech Day 2026 — Certificate of Appreciation", provider: "Tata Consultancy Services (TCS)", date: "2026" },
     { id: 27, image: "Cert/sih_internal_2026.png", title: "Internal Smart India Hackathon (SIH 2026) — Runner Up & Felicitation", provider: "Smart India Hackathon & MMMUT", date: "September 2026" },

@@ -16,7 +16,11 @@
   },
   "homepage": "https://github.com/ankeshbit/Ankesh__Portfolio#readme",
   "dependencies": {
-    "firebase": "^12.19.0"
+    "@vitejs/plugin-react": "^6.1.1",
+    "firebase": "^12.19.0",
+    "motion": "^13.4.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "firebase-admin": "^14.5.0",
