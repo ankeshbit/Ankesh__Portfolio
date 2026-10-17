@@ -354,6 +354,12 @@ document.addEventListener('DOMContentLoaded', () => {
      12. CERTIFICATIONS — Infinite Marquee Showcase
      ───────────────────────────────────────────── */
   const certificates = [
+    { id: 36, image: "Cert/oracle_agentic_ai_2026.png", title: "Oracle Certified Foundations Associate — Agentic AI", provider: "Oracle University", date: "October 2026" },
+    { id: 35, image: "Cert/databricks_sql_analytics_2026.png", title: "Get Started with SQL Analytics and BI on Databricks", provider: "Databricks & Simplilearn", date: "October 2026" },
+    { id: 34, image: "Cert/technocruise_iit_kanpur_2026.png", title: "Technocruise — The National Business Case Challenge | IIT Kanpur (Techkriti'27)", provider: "Techkriti, IIT Kanpur & Unstop", date: "2026" },
+    { id: 33, image: "Cert/ey_techathon_6_2026.png", title: "EY Techathon 6.0 — Executive Summary Submission (Round 1)", provider: "EY & Unstop", date: "2026" },
+    { id: 32, image: "Cert/open_source_hackathon_2026.png", title: "Open Source Hackathon 2026 — Pre-Assessment Qualifier", provider: "Elite Coders & ECSoC", date: "2026" },
+    { id: 31, image: "Cert/aagman_resumex_2026.png", title: "Aagman'26: RESUME-X — Certificate of Participation", provider: "The Social Engineers' Board, MMMUT", date: "2026" },
     { id: 30, image: "Cert/hackuverse_2026.webp", title: "TechTriad — Certificate of Participation", provider: "HackuVerse & Unstop", date: "May 2026" },
     { id: 29, image: "Cert/sih_organizing_team_2026.png", title: "Internal Smart India Hackathon (SIH-2026) — Organizing Team Certificate of Appreciation", provider: "Smart India Hackathon & MMMUT Reso", date: "September 2026" },
     { id: 28, image: "Cert/tcs_tech_day_2026.png", title: "TCS Tech Day 2026 — Certificate of Appreciation", provider: "Tata Consultancy Services (TCS)", date: "2026" },
