@@ -80,8 +80,13 @@ export async function registerWithEmail(name, email, password) {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   if (name && name.trim()) {
     await updateProfile(userCredential.user, { displayName: name.trim() });
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+    }
   }
-  return userCredential.user;
+  const finalUser = auth.currentUser || userCredential.user;
+  window.dispatchEvent(new CustomEvent('profile-updated', { detail: { user: finalUser } }));
+  return finalUser;
 }
 
 /**

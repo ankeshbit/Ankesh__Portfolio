@@ -1,60 +1,86 @@
 rules_version = '2';
 
+/**
+ * ===============================================================
+ * Firestore Security Rules — Portfolio & Visitor Tracking
+ * ===============================================================
+ * Security Architecture & Validation:
+ * 1. Default Deny: All unmatched collections and documents are closed.
+ * 2. Role-Based Admin Claims: Admin privileges require custom claims
+ *    (request.auth.token.admin == true). No client-side values are trusted.
+ * 3. Strict Field Validation:
+ *    - users/{userId}:
+ *      - Strict key whitelist: uid, displayName, email, photoURL, provider,
+ *        createdAt, lastLoginAt, loginCount, lastSeenAt, role.
+ *      - Immutable on non-admin update: uid, email, provider, createdAt, role.
+ *      - Values: provider in ['google','github','email']; displayName and email <= 256 chars;
+ *        photoURL (if present) must be https:// and <= 2048 chars; loginCount must be an int
+ *        (1 on create, unchanged or exactly resource.data.loginCount + 1 on update).
+ *    - visits/{visitId}:
+ *      - Create: exact keys whitelist (uid, visitorName, visitorEmail, startedAt,
+ *        lastActivityAt, page, sectionsViewed, userAgent, referrer).
+ *      - startedAt == request.time, sectionsViewed size <= 20, userAgent <= 150 chars.
+ *      - Update (non-admin): only sectionsViewed and lastActivityAt can change,
+ *        with sectionsViewed size <= 20.
+ * ===============================================================
+ */
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ===============================================================
     // Helper Functions
-    // ===============================================================
-
-    // Check if the request is from an authenticated user
     function isAuthenticated() {
       return request.auth != null && request.auth.uid != null;
     }
 
-    // Check if the user is operating on their own document
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Secure Admin Authorization: Exclusively uses Firebase Auth Custom Claims
-    // Set via Firebase Admin SDK: setCustomUserClaims(uid, { admin: true })
-    // No email strings or client-side flags are trusted.
     function isAdmin() {
-      return isAuthenticated() && request.auth.token.admin == true;
+      return isAuthenticated() && request.auth.token.get('admin', false) == true;
+    }
+
+    function isValidUserFields(data) {
+      return 'uid' in data && data.uid is string && data.uid == request.auth.uid && data.uid.size() <= 128
+        && 'displayName' in data && data.displayName is string && data.displayName.size() <= 256
+        && 'email' in data && data.email is string && data.email.size() <= 256
+        && (!('photoURL' in data) || ('photoURL' in data && data.photoURL is string && data.photoURL.size() <= 2048 && data.photoURL.matches('^https://.*')))
+        && 'provider' in data && data.provider in ['google', 'github', 'email']
+        && (!('role' in data) || data.role == 'visitor')
+        && !('admin' in data);
     }
 
     // ===============================================================
     // Users Collection: users/{userId}
-    // (userId corresponds to the Firebase Auth UID)
     // ===============================================================
     match /users/{userId} {
-      // 1. A user can read (get) their own profile.
-      //    Only verified admins can list / query the collection for analytics.
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
 
-      // 2. An authenticated user can create their profile on first sign-in.
-      //    Guarantees:
-      //    - Must match their auth UID
-      //    - Cannot inject 'admin' field
-      //    - 'role' field, if provided, must be strictly 'visitor'
       allow create: if isOwner(userId)
-        && request.resource.data.uid == request.auth.uid
-        && !('admin' in request.resource.data)
-        && (!('role' in request.resource.data) || request.resource.data.role == 'visitor');
+        && request.resource.data.keys().hasOnly(['uid', 'displayName', 'email', 'photoURL', 'provider', 'createdAt', 'lastLoginAt', 'loginCount', 'lastSeenAt', 'role'])
+        && isValidUserFields(request.resource.data)
+        && 'loginCount' in request.resource.data
+        && request.resource.data.loginCount is int
+        && request.resource.data.loginCount == 1;
 
-      // 3. User can update activity timestamps and counters on their own doc.
-      //    Guarantees:
-      //    - Cannot change uid, role, admin, or createdAt
-      //    - Verified admin has full update rights
       allow update: if (
         isOwner(userId)
-        && request.resource.data.uid == resource.data.uid
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['admin', 'role', 'createdAt', 'uid'])
+        && resource != null
+        && 'email' in resource.data
+        && 'provider' in resource.data
+        && 'loginCount' in resource.data
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'lastLoginAt', 'loginCount', 'lastSeenAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'displayName', 'email', 'photoURL', 'provider', 'createdAt', 'lastLoginAt', 'loginCount', 'lastSeenAt', 'role'])
+        && isValidUserFields(request.resource.data)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.provider == resource.data.provider
+        && 'loginCount' in request.resource.data
+        && request.resource.data.loginCount is int
+        && (request.resource.data.loginCount == resource.data.loginCount || request.resource.data.loginCount == resource.data.loginCount + 1)
       ) || isAdmin();
 
-      // 4. Only admin can delete user profiles
       allow delete: if isAdmin();
     }
 
@@ -62,33 +88,39 @@ service cloud.firestore {
     // Visits Collection: visits/{visitId}
     // ===============================================================
     match /visits/{visitId} {
-      // 1. Only admins can query/list all visits for analytics.
-      //    Visitors can only get their own session record if needed.
-      allow get: if (isAuthenticated() && resource.data.uid == request.auth.uid) || isAdmin();
+      allow get: if (isAuthenticated() && resource != null && 'uid' in resource.data && resource.data.uid == request.auth.uid) || isAdmin();
       allow list: if isAdmin();
 
-      // 2. Authenticated users can create a visit record linked to their UID.
       allow create: if isAuthenticated()
-        && request.resource.data.uid == request.auth.uid;
+        && request.resource.data.keys().hasOnly(['uid', 'visitorName', 'visitorEmail', 'startedAt', 'lastActivityAt', 'page', 'sectionsViewed', 'userAgent', 'referrer'])
+        && 'uid' in request.resource.data && request.resource.data.uid == request.auth.uid
+        && 'startedAt' in request.resource.data && request.resource.data.startedAt == request.time
+        && 'lastActivityAt' in request.resource.data && request.resource.data.lastActivityAt is timestamp
+        && 'visitorName' in request.resource.data && request.resource.data.visitorName is string && request.resource.data.visitorName.size() <= 256
+        && 'visitorEmail' in request.resource.data && request.resource.data.visitorEmail is string && request.resource.data.visitorEmail.size() <= 256
+        && 'page' in request.resource.data && request.resource.data.page is string && request.resource.data.page.size() <= 256
+        && 'sectionsViewed' in request.resource.data && request.resource.data.sectionsViewed is list && request.resource.data.sectionsViewed.size() <= 20
+        && 'userAgent' in request.resource.data && request.resource.data.userAgent is string && request.resource.data.userAgent.size() <= 150
+        && 'referrer' in request.resource.data && request.resource.data.referrer is string && request.resource.data.referrer.size() <= 256;
 
-      // 3. Authenticated users can update activity/sections for their own visit.
-      //    Guarantees:
-      //    - Cannot reassign the visit to another UID
-      //    - Cannot tamper with the original startedAt timestamp
       allow update: if (
         isAuthenticated()
+        && resource != null
+        && 'uid' in resource.data
         && resource.data.uid == request.auth.uid
-        && request.resource.data.uid == resource.data.uid
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['uid', 'startedAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sectionsViewed', 'lastActivityAt'])
+        && 'sectionsViewed' in request.resource.data
+        && request.resource.data.sectionsViewed is list
+        && request.resource.data.sectionsViewed.size() <= 20
+        && 'lastActivityAt' in request.resource.data
+        && request.resource.data.lastActivityAt is timestamp
       ) || isAdmin();
 
-      // 4. Only admin can delete visit records
       allow delete: if isAdmin();
     }
 
     // ===============================================================
     // Default Deny Rule
-    // Any collections or documents not explicitly matched are blocked.
     // ===============================================================
     match /{document=**} {
       allow read, write: if false;

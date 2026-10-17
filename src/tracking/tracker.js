@@ -3,10 +3,40 @@ import { createVisitRecord, updateVisitActivity, updateLastSeen } from '../fireb
 let activeVisitId = null;
 let currentUid = null;
 let viewedSections = new Set(['landing']);
+let pendingSections = new Set();
 let observer = null;
 let updateTimeout = null;
+let heartbeatIntervalId = null;
 let lastWriteTime = 0;
 const MIN_WRITE_INTERVAL_MS = 20000; // at most 1 write every 20 seconds
+
+/**
+ * Flush any queued section views to Firestore in a single batch
+ */
+function flushPendingSections() {
+  if (updateTimeout) {
+    clearTimeout(updateTimeout);
+    updateTimeout = null;
+  }
+
+  if (!activeVisitId || pendingSections.size === 0) return;
+
+  const sectionsToSend = Array.from(pendingSections);
+  pendingSections.clear();
+  lastWriteTime = Date.now();
+  updateVisitActivity(activeVisitId, sectionsToSend);
+}
+
+// Flush pending section views when leaving or hiding the page
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    flushPendingSections();
+  }
+});
+
+window.addEventListener('pagehide', () => {
+  flushPendingSections();
+});
 
 /**
  * Initialize visitor tracking session
@@ -16,9 +46,15 @@ export async function startVisitorTracking(user) {
 
   currentUid = user.uid;
   viewedSections = new Set(['landing']);
+  pendingSections.clear();
 
   try {
-    activeVisitId = await createVisitRecord(user);
+    const visitId = await createVisitRecord(user);
+    // Discard result if session was stopped or switched while awaiting creation
+    if (currentUid !== user.uid) {
+      return;
+    }
+    activeVisitId = visitId;
     attachSectionObserver();
     setupHeartbeat(user.uid);
   } catch (err) {
@@ -30,6 +66,8 @@ export async function startVisitorTracking(user) {
  * Stop tracking session
  */
 export function stopVisitorTracking() {
+  flushPendingSections();
+
   if (observer) {
     observer.disconnect();
     observer = null;
@@ -38,6 +76,11 @@ export function stopVisitorTracking() {
     clearTimeout(updateTimeout);
     updateTimeout = null;
   }
+  if (heartbeatIntervalId) {
+    clearInterval(heartbeatIntervalId);
+    heartbeatIntervalId = null;
+  }
+  pendingSections.clear();
   activeVisitId = null;
   currentUid = null;
 }
@@ -69,33 +112,37 @@ function attachSectionObserver() {
 }
 
 /**
- * Debounce/throttle activity writes to Firestore
+ * Queue activity update with single pending timer and pendingSections batching
  */
 function queueActivityUpdate(sectionId) {
+  if (sectionId) {
+    pendingSections.add(sectionId);
+  }
+
   if (!activeVisitId) return;
 
-  const now = Date.now();
-  const timeSinceLastWrite = now - lastWriteTime;
+  if (!updateTimeout) {
+    const now = Date.now();
+    const timeSinceLastWrite = now - lastWriteTime;
+    const delay = Math.max(0, MIN_WRITE_INTERVAL_MS - timeSinceLastWrite);
 
-  if (timeSinceLastWrite >= MIN_WRITE_INTERVAL_MS) {
-    lastWriteTime = now;
-    updateVisitActivity(activeVisitId, sectionId);
-  } else {
-    // Queue update after remaining cooldown
-    if (updateTimeout) clearTimeout(updateTimeout);
     updateTimeout = setTimeout(() => {
-      lastWriteTime = Date.now();
-      updateVisitActivity(activeVisitId, sectionId);
-    }, MIN_WRITE_INTERVAL_MS - timeSinceLastWrite);
+      flushPendingSections();
+    }, delay);
   }
 }
 
 /**
- * Periodic lastSeenAt heartbeat
+ * Periodic lastSeenAt heartbeat without interval leaks
  */
 function setupHeartbeat(uid) {
+  if (heartbeatIntervalId) {
+    clearInterval(heartbeatIntervalId);
+    heartbeatIntervalId = null;
+  }
+
   const HEARTBEAT_INTERVAL_MS = 5 * 60 * 1000; // Every 5 minutes
-  setInterval(() => {
+  heartbeatIntervalId = setInterval(() => {
     if (currentUid === uid && document.visibilityState === 'visible') {
       updateLastSeen(uid);
     }

@@ -147,8 +147,21 @@ function renderFullDashboard(container) {
 
     <!-- Visitors Table -->
     <div class="admin-table-container">
+      <div style="padding: 16px 20px 8px; font-weight: 600; font-size: 1.05rem; color: var(--text-primary);">
+        Registered Visitors
+      </div>
       <div class="admin-table-responsive">
         ${renderVisitorTableContent(filteredVisitors)}
+      </div>
+    </div>
+
+    <!-- Recent Visits Table -->
+    <div class="admin-table-container" style="margin-top: 24px;">
+      <div style="padding: 16px 20px 8px; font-weight: 600; font-size: 1.05rem; color: var(--text-primary);">
+        Recent Visits &amp; Activity
+      </div>
+      <div class="admin-table-responsive">
+        ${renderRecentVisitsTableContent(allVisits)}
       </div>
     </div>
   `;
@@ -157,7 +170,56 @@ function renderFullDashboard(container) {
   bindControlEvents(container);
 }
 
-function renderVisitorTableContent(visitors) {
+export function renderRecentVisitsTableContent(visits) {
+  if (!visits || visits.length === 0) {
+    return `
+      <div class="table-state-box">
+        <p>No recent session activity recorded.</p>
+      </div>
+    `;
+  }
+
+  const rows = visits.map(v => {
+    const started = formatRelativeTime(v.startedAt);
+    const sections = Array.isArray(v.sectionsViewed) && v.sectionsViewed.length > 0
+      ? v.sectionsViewed.map(s => `<span class="badge-count" style="font-size: 0.72rem; padding: 2px 6px;">${escapeHtml(s)}</span>`).join(' ')
+      : '—';
+
+    return `
+      <tr>
+        <td>
+          <div class="visitor-name">${escapeHtml(v.visitorName || 'Visitor')}</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted);">${escapeHtml(v.visitorEmail || 'No email')}</div>
+        </td>
+        <td style="color: var(--gold-400); font-weight: 500;">${escapeHtml(started)}</td>
+        <td>${escapeHtml(v.page || '/')}</td>
+        <td>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+            ${sections}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Visitor</th>
+          <th>Started</th>
+          <th>Page</th>
+          <th>Sections Viewed</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+}
+
+export function renderVisitorTableContent(visitors) {
   if (visitors.length === 0) {
     return `
       <div class="table-state-box">
@@ -171,14 +233,18 @@ function renderVisitorTableContent(visitors) {
   }
 
   const rowsHtml = visitors.map(v => {
-    const avatarContent = v.photoURL
-      ? `<img src="${v.photoURL}" alt="" class="visitor-avatar" />`
-      : `<div class="visitor-avatar">${getInitials(v.displayName || v.email)}</div>`;
+    const isHttpsPhoto = typeof v.photoURL === 'string' && v.photoURL.startsWith('https://');
+    const avatarContent = isHttpsPhoto
+      ? `<img src="${escapeHtml(v.photoURL)}" alt="" class="visitor-avatar" />`
+      : `<div class="visitor-avatar">${escapeHtml(getInitials(v.displayName || v.email))}</div>`;
 
-    const providerClass = `provider-badge ${v.provider || 'email'}`;
+    const rawProvider = String(v.provider || '').toLowerCase();
+    const provider = ['google', 'github', 'email'].includes(rawProvider) ? rawProvider : 'email';
+    const providerClass = `provider-badge ${provider}`;
     const firstVisit = formatTimestamp(v.createdAt);
     const lastVisit = formatRelativeTime(v.lastLoginAt);
-    const loginCount = v.loginCount || 1;
+    const parsedLoginCount = Number(v.loginCount);
+    const loginCount = Number.isFinite(parsedLoginCount) && parsedLoginCount > 0 ? parsedLoginCount : 1;
 
     return `
       <tr>
@@ -192,10 +258,10 @@ function renderVisitorTableContent(visitors) {
           </div>
         </td>
         <td>
-          <span class="${providerClass}">${v.provider || 'email'}</span>
+          <span class="${providerClass}">${escapeHtml(provider)}</span>
         </td>
-        <td>${firstVisit}</td>
-        <td style="color: var(--gold-400); font-weight: 500;">${lastVisit}</td>
+        <td>${escapeHtml(firstVisit)}</td>
+        <td style="color: var(--gold-400); font-weight: 500;">${escapeHtml(lastVisit)}</td>
         <td>
           <span class="badge-count">${loginCount}</span>
         </td>
@@ -380,9 +446,9 @@ function getInitials(name) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>'"]/g, tag => ({
+export function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>'"]/g, tag => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',

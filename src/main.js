@@ -5,6 +5,7 @@ import { isFirebaseConfigured } from './firebase/config.js';
 import { initAuthUI, setAuthMode } from './auth/auth-ui.js';
 import { initAdminUI, loadAndRenderAdmin } from './admin/admin-ui.js';
 import { startVisitorTracking, stopVisitorTracking } from './tracking/tracker.js';
+import { syncUserProfileOncePerSession } from './firebase/firestore.js';
 
 // DOM Elements
 const loadingScreen = document.getElementById('auth-loading-screen');
@@ -21,14 +22,31 @@ let currentUser = null;
 let isUserAdmin = false;
 let isInitialAuthResolved = false;
 
+// Base path resolution for subpath deployment
+const RAW_BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
+export function getAppRoute() {
+  let pathname = window.location.pathname;
+  if (RAW_BASE && pathname.startsWith(RAW_BASE)) {
+    pathname = pathname.slice(RAW_BASE.length);
+  }
+  return pathname.toLowerCase().replace(/\/$/, '') || '/';
+}
+
+export function toFullPath(route) {
+  const cleanRoute = route.startsWith('/') ? route : `/${route}`;
+  return `${RAW_BASE}${cleanRoute}` || '/';
+}
+
 /**
  * Client-Side Router
  */
 export function navigate(path, replace = false) {
+  const fullPath = toFullPath(path);
   if (replace) {
-    window.history.replaceState({}, '', path);
+    window.history.replaceState({}, '', fullPath);
   } else {
-    window.history.pushState({}, '', path);
+    window.history.pushState({}, '', fullPath);
   }
   handleRoute();
 }
@@ -37,7 +55,7 @@ export function navigate(path, replace = false) {
  * Handle route changes based on authentication state
  */
 async function handleRoute() {
-  const path = window.location.pathname.toLowerCase().replace(/\/$/, '') || '/';
+  const path = getAppRoute();
 
   // If initial auth is still checking, do nothing yet
   if (!isInitialAuthResolved) return;
@@ -56,7 +74,7 @@ async function handleRoute() {
     } else {
       // Default to /login
       if (path !== '/login') {
-        window.history.replaceState({}, '', '/login');
+        window.history.replaceState({}, '', toFullPath('/login'));
       }
       setAuthMode(authContainer, 'login');
     }
@@ -91,12 +109,17 @@ async function handleRoute() {
   startVisitorTracking(currentUser);
 
   // If there's an anchor in the hash, scroll to it smoothly
-  if (window.location.hash) {
-    const targetEl = document.querySelector(window.location.hash);
-    if (targetEl) {
-      setTimeout(() => {
-        targetEl.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+  if (window.location.hash && window.location.hash.length > 1) {
+    try {
+      const targetId = decodeURIComponent(window.location.hash.slice(1));
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        setTimeout(() => {
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    } catch (_) {
+      // Ignore malformed hash
     }
   }
 }
@@ -130,10 +153,7 @@ function hideAdmin() {
   if (adminContainer) adminContainer.classList.add('hidden');
 }
 
-/**
- * Navbar Authenticated User Profile Area
- */
-function updateNavbarProfile() {
+export function updateNavbarProfile() {
   const navActions = document.getElementById('navActions');
   if (!navActions) return;
 
@@ -153,10 +173,11 @@ function updateNavbarProfile() {
   const displayName = currentUser.displayName || currentUser.email?.split('@')[0] || 'User';
   const firstName = displayName.split(' ')[0];
   const photoURL = currentUser.photoURL;
+  const isHttpsPhoto = typeof photoURL === 'string' && photoURL.startsWith('https://');
 
-  const avatarMarkup = photoURL
-    ? `<img src="${photoURL}" alt="" class="nav-avatar" />`
-    : `<div class="nav-avatar">${getInitials(displayName)}</div>`;
+  const avatarMarkup = isHttpsPhoto
+    ? `<img src="${escapeHtml(photoURL)}" alt="" class="nav-avatar" />`
+    : `<div class="nav-avatar">${escapeHtml(getInitials(displayName))}</div>`;
 
   profileWrapper.innerHTML = `
     <button class="nav-profile-btn" id="nav-profile-btn" aria-haspopup="true" aria-expanded="false" title="Account Menu">
@@ -228,9 +249,9 @@ function getInitials(name) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>'"]/g, tag => ({
+export function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>'"]/g, tag => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
@@ -263,7 +284,7 @@ document.addEventListener('click', (e) => {
 
   // Internal hash links (e.g. #about)
   if (href.startsWith('#')) {
-    const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+    const currentPath = getAppRoute();
     if (currentPath !== '/') {
       e.preventDefault();
       navigate('/' + href);
@@ -297,6 +318,7 @@ function initApp() {
     currentUser = user;
     if (user) {
       isUserAdmin = await checkIsAdmin(user);
+      await syncUserProfileOncePerSession(user);
     } else {
       isUserAdmin = false;
     }
@@ -318,6 +340,14 @@ function initApp() {
     }
 
     handleRoute();
+  });
+
+  // Listen for custom profile update events (e.g. after signup displayName change)
+  window.addEventListener('profile-updated', (e) => {
+    if (e.detail?.user) {
+      currentUser = e.detail.user;
+    }
+    updateNavbarProfile();
   });
 
   // Check if Firebase is configured

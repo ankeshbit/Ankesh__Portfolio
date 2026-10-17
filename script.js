@@ -47,16 +47,18 @@ document.addEventListener('DOMContentLoaded', () => {
      2. LANDING — Particles
      ───────────────────────────────────────────── */
   const particlesContainer = document.getElementById('particles');
-  for (let i = 0; i < 30; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = `${Math.random() * 100}%`;
-    p.style.top = `${50 + Math.random() * 50}%`;
-    p.style.animationDelay = `${Math.random() * 6}s`;
-    p.style.animationDuration = `${4 + Math.random() * 4}s`;
-    p.style.width = `${2 + Math.random() * 3}px`;
-    p.style.height = p.style.width;
-    particlesContainer.appendChild(p);
+  if (particlesContainer) {
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = `${Math.random() * 100}%`;
+      p.style.top = `${50 + Math.random() * 50}%`;
+      p.style.animationDelay = `${Math.random() * 6}s`;
+      p.style.animationDuration = `${4 + Math.random() * 4}s`;
+      p.style.width = `${2 + Math.random() * 3}px`;
+      p.style.height = p.style.width;
+      particlesContainer.appendChild(p);
+    }
   }
 
   /* ─────────────────────────────────────────────
@@ -74,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let typingSpeed = 80;
 
   function typeLoop() {
+    if (!typedEl) return;
     const current = designations[desIdx];
     if (isDeleting) {
       typedEl.textContent = current.substring(0, charIdx - 1);
@@ -303,10 +306,17 @@ document.addEventListener('DOMContentLoaded', () => {
      ───────────────────────────────────────────── */
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+      const href = this.getAttribute('href');
+      if (!href || href === '#') return;
       e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      try {
+        const id = decodeURIComponent(href.slice(1));
+        const target = document.getElementById(id);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch (_) {
+        // Skip malformed/invalid selector
       }
     });
   });
@@ -343,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
      12. CERTIFICATIONS — Infinite Marquee Showcase
      ───────────────────────────────────────────── */
   const certificates = [
-    { id: 30, image: "Cert/hackuverse_2026.png", title: "TechTriad — Certificate of Participation", provider: "HackuVerse & Unstop", date: "May 2026" },
+    { id: 30, image: "Cert/hackuverse_2026.webp", title: "TechTriad — Certificate of Participation", provider: "HackuVerse & Unstop", date: "May 2026" },
     { id: 29, image: "Cert/sih_organizing_team_2026.png", title: "Internal Smart India Hackathon (SIH-2026) — Organizing Team Certificate of Appreciation", provider: "Smart India Hackathon & MMMUT Reso", date: "September 2026" },
     { id: 28, image: "Cert/tcs_tech_day_2026.png", title: "TCS Tech Day 2026 — Certificate of Appreciation", provider: "Tata Consultancy Services (TCS)", date: "2026" },
     { id: 27, image: "Cert/sih_internal_2026.png", title: "Internal Smart India Hackathon (SIH 2026) — Runner Up & Felicitation", provider: "Smart India Hackathon & MMMUT", date: "September 2026" },
@@ -351,12 +361,12 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 25, image: "Cert/ismartcomp2026.png", title: "iSmartComp 2026 — Technical & Feedback Committee Volunteer", provider: "IEEE & MMMUT", date: "August 2026" },
     { id: 24, image: "Cert/ankesh-srivastava.png", title: "GEN-AI CAMP — Certificate of Completion", provider: "AlgoUniversity", date: "2026" },
     { id: 23, image: "Cert/certificate_tnp.png", title: "The Paradigm Shift — Certificate of Participation", provider: "Training & Placement Cell, MMMUT", date: "August 2026" },
-    { id: 20, image: "Cert/webnova_2026.png", title: "Winner — Webnova 2026 (National Hackathon)", provider: "IMS Engineering College & HackerRank Campus Crew", date: "2026" },
+    { id: 20, image: "Cert/webnova_2026.webp", title: "Winner — Webnova 2026 (National Hackathon)", provider: "IMS Engineering College & HackerRank Campus Crew", date: "2026" },
     { id: 1, image: "Cert/Certificate_isro.png", title: "Geodata Processing using Python and Machine Learning", provider: "ISRO", date: "February 2026" },
     { id: 2, image: "Cert/Ai.png", title: "AI Unleashed Bootcamp on Machine Learning to Deep Neural Network", provider: "AI Spark Society, MMMUT", date: "October 2025" },
     { id: 3, image: "Cert/Ankesh_cert.png", title: "Three-Day Hands-on Workshop 'PROMPTOPS' 26", provider: "CSSE, MMMUT", date: "February 2026" },
     { id: 4, image: "Cert/IEEE.png", title: "IEEE Day 2025", provider: "IEEE GTBIT SB & IEEE DTU SB", date: "October 2025" },
-    { id: 5, image: "Cert/Nvidia.png", title: "Introduction to AI in the Data Center", provider: "NVIDIA", date: "December 2025" },
+    { id: 5, image: "Cert/Nvidia.webp", title: "Introduction to AI in the Data Center", provider: "NVIDIA", date: "December 2025" },
     { id: 6, image: "Cert/Swiftwings_ankesh_page-0001.jpg", title: "Swiftwings'25 Workshop and Competition", provider: "Drone & IoT Club, MMMUT", date: "December 2025" },
     { id: 7, image: "Cert/Certificate.png", title: "Winter of Code Certificate of Participation", provider: "Elite Coders", date: "2025" },
     { id: 8, image: "Cert/ML.png", title: "Machine Learning for Beginners", provider: "Simplilearn", date: "November 2025" },
@@ -365,10 +375,10 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 11, image: "Cert/Tata.png", title: "Tata Crucible Campus Quiz 2025", provider: "Tata Crucible", date: "November 2025" },
     { id: 12, image: "Cert/Achievement_ecwoc.png", title: "Elite Coders Winter of Code Certificate of Appreciation", provider: "Elite Coders Winter of Code", date: "2025" },
     { id: 13, image: "Cert/Achievment.png", title: "Mathematics National Level E-Quiz 7.0 (Scored 91.5%)", provider: "Chaitanya Bharathi Institute of Technology", date: "September 2025" },
-    { id: 14, image: "Cert/code_clash.png", title: "IIT Jodhpur Winner of Code Clash (Rank 1)", provider: "IIT Jodhpur", date: "N/A" },
+    { id: 14, image: "Cert/code_clash.png", title: "IIT Jodhpur Winner of Code Clash (Rank 1)", provider: "IIT Jodhpur", date: "" },
     { id: 15, image: "Cert/deloitte.png", title: "Data Analytics Job Simulation", provider: "Deloitte", date: "June 2026" },
     { id: 16, image: "Cert/ewoc.png", title: "Elite Coders Winter of Code Contributor", provider: "Elite Coders Winter of Code", date: "2025" },
-    { id: 17, image: "Cert/idea.png", title: "Idea Presentation Certificate of Participation", provider: "MANIT, Bhopal", date: "N/A" },
+    { id: 17, image: "Cert/idea.png", title: "Idea Presentation Certificate of Participation", provider: "MANIT, Bhopal", date: "" },
     { id: 18, image: "Cert/meta.png", title: "Introduction to Front-End Development", provider: "Meta", date: "December 2025" },
     { id: 19, image: "Cert/ms.png", title: "Getting Started with Microsoft Excel", provider: "Coursera Project Network", date: "June 2025" },
     { id: 21, image: "Cert/Vibe2ship.png", title: "Vibe2Ship — India's Biggest Vibe Coding Hackathon", provider: "Coding Ninjas & Google for Developers", date: "2026" },
@@ -386,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="cert-mq-overlay">
         <span class="cert-mq-provider">${item.provider}</span>
         <h3 class="cert-mq-title">${item.title}</h3>
-        <span class="cert-mq-date">${item.date}</span>
+        ${item.date ? `<span class="cert-mq-date">${item.date}</span>` : ''}
       </div>
     `;
     const handleOpen = () => {
@@ -483,121 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ─────────────────────────────────────────────
-     14. HANDWRITTEN SIGNATURE — opentype.js & WAAPI
-     ───────────────────────────────────────────── */
-  let signatureFont = null;
-  const fontUrl = 'https://www.componentry.fun/LastoriaBoldRegular.otf';
 
-  opentype.load(fontUrl, function (err, font) {
-    if (err) {
-      console.error('Font could not be loaded: ' + err);
-    } else {
-      signatureFont = font;
-      initSignature();
-    }
-  });
-
-  function initSignature() {
-    if (!signatureFont) return;
-
-    const text = 'Ankesh';
-    const fontSize = 64;
-    const container = document.getElementById('signatureContainer');
-    if (!container) return;
-
-    container.innerHTML = ''; // Clear previous if any
-
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    let x = 15; // Starting padding
-    const y = fontSize * 1.1; // Baseline offset to fit font outlines nicely
-
-    const pathsContainer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      const glyph = signatureFont.charToGlyph(char);
-      const path = glyph.getPath(x, y, fontSize);
-      const pathData = path.toPathData();
-
-      const svgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      svgPath.setAttribute('d', pathData);
-      svgPath.setAttribute('class', 'sig-path');
-      svgPath.setAttribute('stroke', '#d4af37');
-      svgPath.setAttribute('stroke-width', '1.5');
-      svgPath.setAttribute('fill', '#d4af37');
-      svgPath.setAttribute('fill-opacity', '0');
-      svgPath.style.opacity = '0'; // start hidden
-
-      pathsContainer.appendChild(svgPath);
-
-      x += glyph.advanceWidth * (fontSize / signatureFont.unitsPerEm);
-    }
-
-    const totalWidth = x + 15; // Ending padding
-    const height = fontSize * 1.5;
-
-    svg.setAttribute('viewBox', `0 0 ${totalWidth} ${height}`);
-    svg.setAttribute('width', `${totalWidth}px`);
-    svg.setAttribute('height', `${height}px`);
-    svg.appendChild(pathsContainer);
-    container.appendChild(svg);
-
-    // Trigger animation once when signature wrapper scrolls into view
-    const signatureWrapper = container.closest('.signature-wrapper');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          playSignatureAnimation();
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
-
-    if (signatureWrapper) {
-      observer.observe(signatureWrapper);
-    } else {
-      observer.observe(container);
-    }
-  }
-
-  function playSignatureAnimation() {
-    const paths = document.querySelectorAll('.sig-path');
-    paths.forEach((path, index) => {
-      const length = path.getTotalLength();
-
-      // Reset style values
-      path.style.opacity = '1';
-      path.style.strokeDasharray = length;
-      path.style.strokeDashoffset = length;
-      path.style.fillOpacity = '0';
-
-      // Cancel any active animation
-      path.getAnimations().forEach(anim => anim.cancel());
-
-      // Stroke draw animation (1.5s duration, 0.2s stagger)
-      path.animate([
-        { strokeDashoffset: length },
-        { strokeDashoffset: 0 }
-      ], {
-        duration: 1500,
-        delay: index * 200,
-        fill: 'forwards',
-        easing: 'ease-out'
-      });
-
-      // Fill flood animation (starts slightly before stroke finishes drawing)
-      path.animate([
-        { fillOpacity: 0 },
-        { fillOpacity: 1 }
-      ], {
-        duration: 600,
-        delay: (index * 200) + 1200,
-        fill: 'forwards',
-        easing: 'ease-in-out'
-      });
-    });
-  }
 
   /* ─────────────────────────────────────────────
      15. WEBGL PLASMA BACKGROUND
@@ -917,13 +813,17 @@ void main() {
   const certModalBackdrop = document.getElementById('certModalBackdrop');
 
   function openCert() {
-    certModal.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    if (certModal) {
+      certModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
   }
 
   function closeCert() {
-    certModal.classList.remove('open');
-    document.body.style.overflow = '';
+    if (certModal) {
+      certModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
   }
 
   if (openCertBtn) {
@@ -942,13 +842,17 @@ void main() {
   const prodigyCertModalBackdrop = document.getElementById('prodigyCertModalBackdrop');
 
   function openProdigyCert() {
-    prodigyCertModal.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    if (prodigyCertModal) {
+      prodigyCertModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
   }
 
   function closeProdigyCert() {
-    prodigyCertModal.classList.remove('open');
-    document.body.style.overflow = '';
+    if (prodigyCertModal) {
+      prodigyCertModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
   }
 
   if (openProdigyCertBtn) {

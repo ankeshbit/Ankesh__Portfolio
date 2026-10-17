@@ -6,7 +6,7 @@ import {
   resetPassword,
   mapAuthError
 } from '../firebase/auth.js';
-import { syncUserProfile } from '../firebase/firestore.js';
+import { syncUserProfile, syncUserProfileOncePerSession } from '../firebase/firestore.js';
 
 // SVG Icons
 const GOOGLE_ICON = `
@@ -325,7 +325,7 @@ function bindEvents(container, mode) {
 
       try {
         const user = await loginWithGoogle();
-        await syncUserProfile(user);
+        await syncUserProfileOncePerSession(user);
         if (navigateFn) navigateFn('/');
       } catch (err) {
         showAlert(container, 'error', mapAuthError(err));
@@ -345,7 +345,7 @@ function bindEvents(container, mode) {
 
       try {
         const user = await loginWithGithub();
-        await syncUserProfile(user);
+        await syncUserProfileOncePerSession(user);
         if (navigateFn) navigateFn('/');
       } catch (err) {
         showAlert(container, 'error', mapAuthError(err));
@@ -377,7 +377,7 @@ function bindEvents(container, mode) {
 
       try {
         const user = await loginWithEmail(email, password);
-        await syncUserProfile(user);
+        await syncUserProfileOncePerSession(user);
         if (navigateFn) navigateFn('/');
       } catch (err) {
         showAlert(container, 'error', mapAuthError(err));
@@ -418,7 +418,7 @@ function bindEvents(container, mode) {
 
       try {
         const user = await registerWithEmail(name, email, password);
-        await syncUserProfile(user);
+        await syncUserProfileOncePerSession(user);
         if (navigateFn) navigateFn('/');
       } catch (err) {
         showAlert(container, 'error', mapAuthError(err));
@@ -448,15 +448,24 @@ function bindEvents(container, mode) {
         await resetPassword(email);
         showAlert(container, 'success', 'Password reset instructions have been sent to your email.');
         submitBtn.disabled = true;
+        let remainingSeconds = 30;
+        submitBtn.textContent = `Resend link in ${remainingSeconds}s`;
+
+        const countdownInterval = setInterval(() => {
+          remainingSeconds--;
+          if (remainingSeconds > 0) {
+            submitBtn.textContent = `Resend link in ${remainingSeconds}s`;
+          } else {
+            clearInterval(countdownInterval);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Resend link';
+          }
+        }, 1000);
       } catch (err) {
         showAlert(container, 'error', mapAuthError(err));
+        setLoading(submitBtn, false, 'Send Reset Link');
       } finally {
-        if (!submitBtn.disabled) {
-          setLoading(submitBtn, false, 'Send Reset Link');
-        } else {
-          submitBtn.innerHTML = 'Link Sent';
-          isSubmitting = false;
-        }
+        isSubmitting = false;
       }
     });
   }
@@ -486,7 +495,11 @@ function showAlert(container, type, message) {
   const alertClass = type === 'error' ? 'auth-alert auth-alert-error' : 'auth-alert auth-alert-success';
 
   alertBox.className = alertClass;
-  alertBox.innerHTML = `${icon}<div>${message}</div>`;
+  alertBox.innerHTML = `${icon}<div class="alert-message-text"></div>`;
+  const textEl = alertBox.querySelector('.alert-message-text');
+  if (textEl) {
+    textEl.textContent = message || '';
+  }
   alertBox.style.display = 'flex';
 }
 

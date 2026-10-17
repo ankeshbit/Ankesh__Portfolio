@@ -3189,25 +3189,6 @@ ul {
   }
 }
 
-/* ═══════════════════════════ SIGNATURE STYLES ═══════════════════════════ */
-.signature-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 24px 0 16px;
-  min-height: 96px;
-}
-
-.signature-container {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sig-path {
-  will-change: stroke-dashoffset, fill-opacity;
-}
-
 /* ═══════════════════════════ WEBGL PLASMA READABILITY OVERLAYS ═══════════════════════════ */
 /* Semi-transparent navbar overlay */
 header,

@@ -11,22 +11,24 @@ import {
   orderBy,
   limit,
   getDocs,
-  arrayUnion
+  arrayUnion,
+  getCountFromServer,
+  where,
+  Timestamp
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from './config.js';
 
 /**
- * Identify authentication provider name dynamically
+ * Identify authentication provider name dynamically (whitelisted to 'google' | 'github' | 'email')
  */
 export function getProviderName(user) {
   if (!user || !user.providerData || user.providerData.length === 0) {
     return 'email';
   }
-  const providerId = user.providerData[0].providerId;
+  const providerId = user.providerData[0].providerId || '';
   if (providerId.includes('google')) return 'google';
   if (providerId.includes('github')) return 'github';
-  if (providerId.includes('password')) return 'email';
-  return providerId;
+  return 'email';
 }
 
 /**
@@ -41,20 +43,27 @@ export async function syncUserProfile(user) {
     const userSnap = await getDoc(userRef);
     const provider = getProviderName(user);
 
+    const displayName = (user.displayName || user.email?.split('@')[0] || 'Visitor').substring(0, 256);
+    const email = (user.email || '').substring(0, 256);
+    const hasHttpsPhoto = typeof user.photoURL === 'string' && user.photoURL.startsWith('https://');
+
     if (!userSnap.exists()) {
       // First visit - create user document
       const initialData = {
         uid: user.uid,
-        displayName: user.displayName || user.email?.split('@')[0] || 'Visitor',
-        email: user.email || '',
-        photoURL: user.photoURL || '',
-        provider: provider,
+        displayName,
+        email,
+        provider,
         createdAt: serverTimestamp(),
         lastLoginAt: serverTimestamp(),
         loginCount: 1,
         lastSeenAt: serverTimestamp(),
         role: 'visitor'
       };
+
+      if (hasHttpsPhoto && user.photoURL.length <= 2048) {
+        initialData.photoURL = user.photoURL;
+      }
 
       await setDoc(userRef, initialData);
       return initialData;
@@ -66,9 +75,12 @@ export async function syncUserProfile(user) {
         loginCount: increment(1)
       };
 
-      // Keep profile up to date if OAuth provides newer name/photo
-      if (user.displayName) updateData.displayName = user.displayName;
-      if (user.photoURL) updateData.photoURL = user.photoURL;
+      if (user.displayName) {
+        updateData.displayName = user.displayName.substring(0, 256);
+      }
+      if (hasHttpsPhoto && user.photoURL.length <= 2048) {
+        updateData.photoURL = user.photoURL;
+      }
 
       await updateDoc(userRef, updateData);
       return { ...userSnap.data(), ...updateData };
@@ -77,6 +89,23 @@ export async function syncUserProfile(user) {
     console.error('Error syncing user profile to Firestore:', error);
     return null;
   }
+}
+
+/**
+ * Guarded profile sync to ensure syncUserProfile runs at most once per browser session per uid
+ */
+export async function syncUserProfileOncePerSession(user) {
+  if (!user || !user.uid) return null;
+  const sessionKey = `synced_profile_${user.uid}`;
+  try {
+    if (sessionStorage.getItem(sessionKey)) {
+      return null;
+    }
+    sessionStorage.setItem(sessionKey, '1');
+  } catch (_) {
+    // sessionStorage unavailable
+  }
+  return await syncUserProfile(user);
 }
 
 /**
@@ -104,14 +133,14 @@ export async function createVisitRecord(user) {
     const visitsCol = collection(db, 'visits');
     const visitDoc = await addDoc(visitsCol, {
       uid: user.uid,
-      visitorName: user.displayName || user.email?.split('@')[0] || 'Visitor',
-      visitorEmail: user.email || '',
+      visitorName: (user.displayName || user.email?.split('@')[0] || 'Visitor').substring(0, 256),
+      visitorEmail: (user.email || '').substring(0, 256),
       startedAt: serverTimestamp(),
       lastActivityAt: serverTimestamp(),
-      page: window.location.pathname || '/',
+      page: (window.location.pathname || '/').substring(0, 256),
       sectionsViewed: ['landing'],
-      userAgent: navigator.userAgent.substring(0, 150),
-      referrer: document.referrer || 'direct'
+      userAgent: (navigator.userAgent || '').substring(0, 150),
+      referrer: (document.referrer || 'direct').substring(0, 256)
     });
 
     return visitDoc.id;
@@ -122,15 +151,22 @@ export async function createVisitRecord(user) {
 }
 
 /**
- * Record activity or section view for an active visit session
+ * Record activity or section view for an active visit session.
+ * Accepts an array of sections or a single section string.
  */
-export async function updateVisitActivity(visitId, sectionId) {
-  if (!db || !isFirebaseConfigured() || !visitId || !sectionId) return;
+export async function updateVisitActivity(visitId, sections) {
+  if (!db || !isFirebaseConfigured() || !visitId || !sections) return;
+
+  const sectionsArray = (Array.isArray(sections) ? sections : [sections])
+    .filter(s => typeof s === 'string' && s.trim().length > 0)
+    .slice(0, 20);
+
+  if (!sectionsArray.length) return;
 
   try {
     const visitRef = doc(db, 'visits', visitId);
     await updateDoc(visitRef, {
-      sectionsViewed: arrayUnion(sectionId),
+      sectionsViewed: arrayUnion(...sectionsArray),
       lastActivityAt: serverTimestamp()
     });
   } catch (error) {
@@ -146,64 +182,60 @@ export async function getAdminVisitorData() {
     throw new Error('Firebase is not configured.');
   }
 
-  // Fetch users ordered by lastLoginAt
-  const usersQuery = query(collection(db, 'users'), orderBy('lastLoginAt', 'desc'), limit(200));
-  const usersSnap = await getDocs(usersQuery);
+  const usersCol = collection(db, 'users');
+  const visitsCol = collection(db, 'visits');
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  /**
+   * Note on Firestore Composite Indexes:
+   * The count queries below use single-field filters:
+   * - where('createdAt', '>=', Timestamp.fromDate(sevenDaysAgo))
+   * - where('loginCount', '>', 1)
+   * - where('startedAt', '>=', Timestamp.fromDate(startOfToday))
+   * These utilize Firestore's automatic single-field indexes without needing composite indexes.
+   * If any query combines multiple inequality filters or combines where() with an orderBy()
+   * on a different field, composite indexes would be required.
+   */
+  const [
+    totalUsersSnap,
+    newUsersSnap,
+    returningUsersSnap,
+    visitsTodaySnap,
+    usersSnap,
+    visitsSnap
+  ] = await Promise.all([
+    getCountFromServer(usersCol),
+    getCountFromServer(query(usersCol, where('createdAt', '>=', Timestamp.fromDate(sevenDaysAgo)))),
+    getCountFromServer(query(usersCol, where('loginCount', '>', 1))),
+    getCountFromServer(query(visitsCol, where('startedAt', '>=', Timestamp.fromDate(startOfToday)))),
+    getDocs(query(usersCol, orderBy('lastLoginAt', 'desc'), limit(200))),
+    getDocs(query(visitsCol, orderBy('startedAt', 'desc'), limit(50))).catch(err => {
+      console.warn('Visits query notice:', err.message);
+      return { forEach: () => {} };
+    })
+  ]);
 
   const visitors = [];
   usersSnap.forEach(docSnap => {
     visitors.push({ id: docSnap.id, ...docSnap.data() });
   });
 
-  // Fetch recent visits
-  let visits = [];
-  try {
-    const visitsQuery = query(collection(db, 'visits'), orderBy('startedAt', 'desc'), limit(100));
-    const visitsSnap = await getDocs(visitsQuery);
-    visitsSnap.forEach(docSnap => {
-      visits.push({ id: docSnap.id, ...docSnap.data() });
-    });
-  } catch (e) {
-    console.warn('Visits query notice:', e.message);
-  }
-
-  // Calculate statistics
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const sevenDaysAgo = now.getTime() - 7 * 24 * 60 * 60 * 1000;
-
-  const totalVisitors = visitors.length;
-  let newVisitors = 0;
-  let returningVisitors = 0;
-  let visitsToday = 0;
-
-  visitors.forEach(v => {
-    const createdTime = v.createdAt?.toMillis ? v.createdAt.toMillis() : null;
-    const loginCount = v.loginCount || 1;
-
-    if (createdTime && createdTime >= sevenDaysAgo) {
-      newVisitors++;
-    }
-    if (loginCount > 1) {
-      returningVisitors++;
-    }
-  });
-
-  visits.forEach(v => {
-    const startTime = v.startedAt?.toMillis ? v.startedAt.toMillis() : null;
-    if (startTime && startTime >= startOfToday) {
-      visitsToday++;
-    }
+  const visits = [];
+  visitsSnap.forEach(docSnap => {
+    visits.push({ id: docSnap.id, ...docSnap.data() });
   });
 
   return {
     visitors,
     visits,
     stats: {
-      totalVisitors,
-      newVisitors,
-      visitsToday: visitsToday || visitors.filter(v => v.lastLoginAt?.toMillis && v.lastLoginAt.toMillis() >= startOfToday).length,
-      returningVisitors
+      totalVisitors: totalUsersSnap.data().count,
+      newVisitors: newUsersSnap.data().count,
+      visitsToday: visitsTodaySnap.data().count,
+      returningVisitors: returningUsersSnap.data().count
     }
   };
 }
