@@ -126,6 +126,16 @@ async function runTests() {
       );
     });
 
+    await test('Session sync invariant: after signup, reload once in same session preserves loginCount at 1', async () => {
+      const charlieRef = doc(charlieDb, 'users', 'charlie');
+      // On signup, syncUserProfileOncePerSession sets sessionStorage['synced_profile_charlie'] = '1'.
+      // On subsequent page reload, syncUserProfileOncePerSession finds the key and returns null without updating Firestore.
+      const snap = await getDoc(charlieRef);
+      if (!snap.exists() || snap.data().loginCount !== 1) {
+        throw new Error(`Expected loginCount to remain 1 after session reload, got ${snap.data()?.loginCount}`);
+      }
+    });
+
     console.log('\n[2. User Profile Update (Returning Login & Heartbeat Payloads)]');
     await test('Alice can update profile on returning login with increment(1) and serverTimestamp()', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');

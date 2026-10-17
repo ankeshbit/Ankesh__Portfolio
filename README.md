@@ -59,3 +59,18 @@ The project includes Single-Page Application (SPA) routing fallbacks for product
   - `public/_redirects` contains `/*  /index.html  200` to direct all routes to the single-page application router.
 - **Vercel / Other Static Hosts**:
   - Rewrites all non-file requests to `/index.html`.
+
+---
+
+## 🧪 Verification & Session Sync Testing
+
+### Manual Note: Signup & Reload `loginCount` Invariant
+To manually verify that profile synchronization runs once per browser session and does not duplicate or increment `loginCount` upon page reloads:
+1. Open the application and navigate to `/signup`.
+2. Register a new email account (e.g. `visitor@example.com`).
+3. After registration and redirection to `/`, open Firestore Database (in Firebase Console or local emulator UI).
+4. Verify document `users/{uid}` exists with `loginCount == 1`.
+5. Reload the page once (`F5` or `Ctrl+R`).
+6. Confirm `users/{uid}.loginCount` is still `1`:
+   - `syncUserProfileOncePerSession` reads `sessionStorage.getItem('synced_profile_<uid>')`, sees the session key, and exits early without sending a returning-login update.
+
