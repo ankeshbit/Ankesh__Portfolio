@@ -7,6 +7,7 @@ import {
   mapAuthError
 } from '../firebase/auth.js';
 import { syncUserProfile, syncUserProfileOncePerSession } from '../firebase/firestore.js';
+import { auth } from '../firebase/config.js';
 
 export let signupInProgress = false;
 
@@ -419,13 +420,22 @@ function bindEvents(container, mode) {
       clearAlert(container);
 
       signupInProgress = true;
+      let syncDone = false;
       try {
         const user = await registerWithEmail(name, email, password);
-        await syncUserProfileOncePerSession(user);
+        await syncUserProfile(user);
+        syncDone = true;
         if (navigateFn) navigateFn('/');
       } catch (err) {
         showAlert(container, 'error', mapAuthError(err));
       } finally {
+        if (!syncDone && auth?.currentUser) {
+          try {
+            await syncUserProfile(auth.currentUser);
+          } catch (e) {
+            console.warn('Signup fallback profile sync notice:', e);
+          }
+        }
         signupInProgress = false;
         setLoading(submitBtn, false, 'Create Account');
       }

@@ -69,7 +69,7 @@ service cloud.firestore {
         && request.resource.data.loginCount == 1;
 
       allow update: if (
-        exists(/databases/$(database)/documents/users/$(userId))
+        resource != null
         && isOwner(userId)
         && 'email' in resource.data
         && 'provider' in resource.data
@@ -93,7 +93,7 @@ service cloud.firestore {
     // Visits Collection: visits/{visitId}
     // ===============================================================
     match /visits/{visitId} {
-      allow get: if (isAuthenticated() && exists(/databases/$(database)/documents/visits/$(visitId)) && 'uid' in resource.data && resource.data.uid == request.auth.uid) || isAdmin();
+      allow get: if (isAuthenticated() && resource != null && 'uid' in resource.data && resource.data.uid == request.auth.uid) || isAdmin();
       allow list: if isAdmin();
 
       allow create: if isAuthenticated()
@@ -109,7 +109,7 @@ service cloud.firestore {
         && 'referrer' in request.resource.data && request.resource.data.referrer is string && request.resource.data.referrer.size() <= 256;
 
       allow update: if (
-        exists(/databases/$(database)/documents/visits/$(visitId))
+        resource != null
         && isAuthenticated()
         && 'uid' in resource.data
         && resource.data.uid == request.auth.uid

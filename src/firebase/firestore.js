@@ -91,8 +91,11 @@ export async function syncUserProfile(user) {
   }
 }
 
+const inFlightSyncs = new Map();
+
 /**
- * Guarded profile sync to ensure syncUserProfile runs at most once per browser session per uid
+ * Guarded profile sync to ensure syncUserProfile runs at most once per browser session per uid.
+ * Returns the same promise to concurrent callers for the same uid.
  */
 export async function syncUserProfileOncePerSession(user) {
   if (!user || !user.uid) return null;
@@ -105,18 +108,26 @@ export async function syncUserProfileOncePerSession(user) {
     // sessionStorage unavailable
   }
 
-  try {
-    const result = await syncUserProfile(user);
-    try {
-      sessionStorage.setItem(sessionKey, '1');
-    } catch (_) {}
-    return result;
-  } catch (error) {
-    try {
-      sessionStorage.removeItem(sessionKey);
-    } catch (_) {}
-    throw error;
+  if (inFlightSyncs.has(user.uid)) {
+    return inFlightSyncs.get(user.uid);
   }
+
+  const syncPromise = (async () => {
+    try {
+      const result = await syncUserProfile(user);
+      if (result) {
+        try {
+          sessionStorage.setItem(sessionKey, '1');
+        } catch (_) {}
+      }
+      return result;
+    } finally {
+      inFlightSyncs.delete(user.uid);
+    }
+  })();
+
+  inFlightSyncs.set(user.uid, syncPromise);
+  return syncPromise;
 }
 
 /**

@@ -227,6 +227,16 @@ async function runTests() {
       );
     });
 
+    await test('POSITIVE CONTROL: Identical update with valid integer loginCount succeeds', async () => {
+      const aliceRef = doc(aliceDb, 'users', 'alice');
+      await assertSucceeds(
+        updateDoc(aliceRef, {
+          lastLoginAt: serverTimestamp(),
+          loginCount: increment(1)
+        })
+      );
+    });
+
     // 3d. non-timestamp updates
     await test('NEGATIVE: Non-timestamp lastLoginAt or lastSeenAt on update is REJECTED', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
