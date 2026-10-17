@@ -7,8 +7,10 @@ import {
   collection,
   getDocs,
   serverTimestamp,
+  increment,
+  arrayUnion,
   getCountFromServer,
-  arrayUnion
+  Timestamp
 } from 'firebase/firestore';
 import fs from 'fs';
 
@@ -72,7 +74,7 @@ async function runTests() {
     const unauthDb = unauthContext.firestore();
 
     console.log('\n[1. User Profile Creation (First Login & Exact Client Payloads)]');
-    await test('Alice can create her user profile with role "visitor" and loginCount 1', async () => {
+    await test('Alice can create her user profile with role "visitor", loginCount 1, and serverTimestamp()', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
       await assertSucceeds(
         setDoc(aliceRef, {
@@ -90,7 +92,24 @@ async function runTests() {
       );
     });
 
-    await test('Positive client payload: First login for an email user with NO photoURL is ALLOWED', async () => {
+    await test('NEGATIVE: Forged createdAt (past or arbitrary timestamp) on first login is REJECTED', async () => {
+      const forgedUserRef = doc(bobDb, 'users', 'bob');
+      await assertFails(
+        setDoc(forgedUserRef, {
+          uid: 'bob',
+          displayName: 'Bob Forged',
+          email: 'bob@example.com',
+          provider: 'email',
+          createdAt: Timestamp.fromDate(new Date('2020-01-01T00:00:00Z')),
+          lastLoginAt: serverTimestamp(),
+          loginCount: 1,
+          lastSeenAt: serverTimestamp(),
+          role: 'visitor'
+        })
+      );
+    });
+
+    await test('POSITIVE CONTROL: Normal first login for email user with createdAt == serverTimestamp() and NO photoURL is ALLOWED', async () => {
       const charlieRef = doc(charlieDb, 'users', 'charlie');
       await assertSucceeds(
         setDoc(charlieRef, {
@@ -108,27 +127,27 @@ async function runTests() {
     });
 
     console.log('\n[2. User Profile Update (Returning Login & Heartbeat Payloads)]');
-    await test('Alice can update profile on returning login with loginCount incremented to 2', async () => {
+    await test('Alice can update profile on returning login with increment(1) and serverTimestamp()', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
       await assertSucceeds(
         updateDoc(aliceRef, {
           lastLoginAt: serverTimestamp(),
-          loginCount: 2
+          loginCount: increment(1)
         })
       );
     });
 
-    await test('Positive client payload: Returning login with NO displayName/photoURL in payload is ALLOWED', async () => {
+    await test('Positive client payload: Returning login with NO displayName/photoURL using increment(1) is ALLOWED', async () => {
       const charlieRef = doc(charlieDb, 'users', 'charlie');
       await assertSucceeds(
         updateDoc(charlieRef, {
           lastLoginAt: serverTimestamp(),
-          loginCount: 2
+          loginCount: increment(1)
         })
       );
     });
 
-    await test('Positive client payload: Heartbeat-only update {lastSeenAt} is ALLOWED', async () => {
+    await test('Positive client payload: Heartbeat-only update {lastSeenAt: serverTimestamp()} is ALLOWED', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
       await assertSucceeds(
         updateDoc(aliceRef, {
@@ -187,12 +206,12 @@ async function runTests() {
       );
     });
 
-    await test('POSITIVE CONTROL: Identical update with valid sequential increment (2 -> 3) succeeds', async () => {
+    await test('POSITIVE CONTROL: Identical update with valid sequential increment(1) succeeds', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
       await assertSucceeds(
         updateDoc(aliceRef, {
           lastLoginAt: serverTimestamp(),
-          loginCount: 3
+          loginCount: increment(1)
         })
       );
     });
@@ -208,17 +227,22 @@ async function runTests() {
       );
     });
 
-    await test('POSITIVE CONTROL: Identical update with integer loginCount (3 -> 4) succeeds', async () => {
+    // 3d. non-timestamp updates
+    await test('NEGATIVE: Non-timestamp lastLoginAt or lastSeenAt on update is REJECTED', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
-      await assertSucceeds(
+      await assertFails(
         updateDoc(aliceRef, {
-          lastLoginAt: serverTimestamp(),
-          loginCount: 4
+          lastLoginAt: 'not-a-timestamp'
+        })
+      );
+      await assertFails(
+        updateDoc(aliceRef, {
+          lastSeenAt: 123456789
         })
       );
     });
 
-    // 3d. extra unwhitelisted fields
+    // 3e. extra unwhitelisted fields
     await test('NEGATIVE: Rejected if unwhitelisted fields are included on update', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
       await assertFails(
@@ -237,7 +261,7 @@ async function runTests() {
       );
     });
 
-    // 3e. role change
+    // 3f. role change
     await test('NEGATIVE: Rejected if non-admin tries to change role to "admin"', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
       await assertFails(
@@ -256,7 +280,7 @@ async function runTests() {
       );
     });
 
-    // 3f. email change
+    // 3g. email change
     await test('NEGATIVE: Rejected if non-admin tries to change email', async () => {
       const aliceRef = doc(aliceDb, 'users', 'alice');
       await assertFails(
@@ -275,7 +299,7 @@ async function runTests() {
       );
     });
 
-    // 3g. cross-user write
+    // 3h. cross-user write
     await test('NEGATIVE: Alice cannot modify Bob\'s document', async () => {
       const bobRefFromAlice = doc(aliceDb, 'users', 'bob');
       await assertFails(

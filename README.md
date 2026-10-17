@@ -54,6 +54,7 @@ The project includes Single-Page Application (SPA) routing fallbacks for product
 - **GitHub Pages**:
   - `public/404.html` captures requests to deep links (such as `/login`, `/admin`, `/signup`) and redirects to `index.html` while preserving query parameters and subpaths.
   - Set `VITE_BASE=/your-repo-name/` in `.env` if deploying to a GitHub Pages repository subpath.
+  - In `public/404.html`, `pathSegmentsToKeep` must be set to `1` for GitHub Pages project sites (`https://<user>.github.io/<repo>/`) so the repository subpath is preserved during redirect (leave as `0` for user/custom root domains).
 - **Netlify**:
   - `public/_redirects` contains `/*  /index.html  200` to direct all routes to the single-page application router.
 - **Vercel / Other Static Hosts**:

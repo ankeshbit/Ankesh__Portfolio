@@ -101,11 +101,22 @@ export async function syncUserProfileOncePerSession(user) {
     if (sessionStorage.getItem(sessionKey)) {
       return null;
     }
-    sessionStorage.setItem(sessionKey, '1');
   } catch (_) {
     // sessionStorage unavailable
   }
-  return await syncUserProfile(user);
+
+  try {
+    const result = await syncUserProfile(user);
+    try {
+      sessionStorage.setItem(sessionKey, '1');
+    } catch (_) {}
+    return result;
+  } catch (error) {
+    try {
+      sessionStorage.removeItem(sessionKey);
+    } catch (_) {}
+    throw error;
+  }
 }
 
 /**

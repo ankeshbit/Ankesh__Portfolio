@@ -8,6 +8,8 @@ import {
 } from '../firebase/auth.js';
 import { syncUserProfile, syncUserProfileOncePerSession } from '../firebase/firestore.js';
 
+export let signupInProgress = false;
+
 // SVG Icons
 const GOOGLE_ICON = `
 <svg viewBox="0 0 24 24" width="20" height="20">
@@ -416,6 +418,7 @@ function bindEvents(container, mode) {
       setLoading(submitBtn, true, 'Creating account...');
       clearAlert(container);
 
+      signupInProgress = true;
       try {
         const user = await registerWithEmail(name, email, password);
         await syncUserProfileOncePerSession(user);
@@ -423,6 +426,7 @@ function bindEvents(container, mode) {
       } catch (err) {
         showAlert(container, 'error', mapAuthError(err));
       } finally {
+        signupInProgress = false;
         setLoading(submitBtn, false, 'Create Account');
       }
     });

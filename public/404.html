@@ -6,6 +6,10 @@
     <script>
       // Single Page Apps for GitHub Pages
       // https://github.com/rafgraph/spa-github-pages
+      // NOTE:
+      // - For a GitHub Pages user site (e.g. https://<username>.github.io), set pathSegmentsToKeep = 0.
+      // - For a GitHub Pages project site (e.g. https://<username>.github.io/<repo-name>/),
+      //   pathSegmentsToKeep MUST be 1 so that the repository subpath is preserved in the URL redirect.
       var pathSegmentsToKeep = 0;
       var l = window.location;
       l.replace(

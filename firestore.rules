@@ -45,7 +45,7 @@ service cloud.firestore {
       return 'uid' in data && data.uid is string && data.uid == request.auth.uid && data.uid.size() <= 128
         && 'displayName' in data && data.displayName is string && data.displayName.size() <= 256
         && 'email' in data && data.email is string && data.email.size() <= 256
-        && (!('photoURL' in data) || ('photoURL' in data && data.photoURL is string && data.photoURL.size() <= 2048 && data.photoURL.matches('^https://.*')))
+        && (!('photoURL' in data) || ('photoURL' in data && data.photoURL is string && data.photoURL.size() <= 2048 && data.photoURL.matches('https://.*')))
         && 'provider' in data && data.provider in ['google', 'github', 'email']
         && (!('role' in data) || data.role == 'visitor')
         && !('admin' in data);
@@ -61,13 +61,16 @@ service cloud.firestore {
       allow create: if isOwner(userId)
         && request.resource.data.keys().hasOnly(['uid', 'displayName', 'email', 'photoURL', 'provider', 'createdAt', 'lastLoginAt', 'loginCount', 'lastSeenAt', 'role'])
         && isValidUserFields(request.resource.data)
+        && 'createdAt' in request.resource.data && request.resource.data.createdAt == request.time
+        && 'lastLoginAt' in request.resource.data && request.resource.data.lastLoginAt is timestamp
+        && 'lastSeenAt' in request.resource.data && request.resource.data.lastSeenAt is timestamp
         && 'loginCount' in request.resource.data
         && request.resource.data.loginCount is int
         && request.resource.data.loginCount == 1;
 
       allow update: if (
-        isOwner(userId)
-        && resource != null
+        exists(/databases/$(database)/documents/users/$(userId))
+        && isOwner(userId)
         && 'email' in resource.data
         && 'provider' in resource.data
         && 'loginCount' in resource.data
@@ -79,6 +82,8 @@ service cloud.firestore {
         && 'loginCount' in request.resource.data
         && request.resource.data.loginCount is int
         && (request.resource.data.loginCount == resource.data.loginCount || request.resource.data.loginCount == resource.data.loginCount + 1)
+        && (!('lastLoginAt' in request.resource.data.diff(resource.data).affectedKeys()) || ('lastLoginAt' in request.resource.data && request.resource.data.lastLoginAt is timestamp))
+        && (!('lastSeenAt' in request.resource.data.diff(resource.data).affectedKeys()) || ('lastSeenAt' in request.resource.data && request.resource.data.lastSeenAt is timestamp))
       ) || isAdmin();
 
       allow delete: if isAdmin();
@@ -88,7 +93,7 @@ service cloud.firestore {
     // Visits Collection: visits/{visitId}
     // ===============================================================
     match /visits/{visitId} {
-      allow get: if (isAuthenticated() && resource != null && 'uid' in resource.data && resource.data.uid == request.auth.uid) || isAdmin();
+      allow get: if (isAuthenticated() && exists(/databases/$(database)/documents/visits/$(visitId)) && 'uid' in resource.data && resource.data.uid == request.auth.uid) || isAdmin();
       allow list: if isAdmin();
 
       allow create: if isAuthenticated()
@@ -104,8 +109,8 @@ service cloud.firestore {
         && 'referrer' in request.resource.data && request.resource.data.referrer is string && request.resource.data.referrer.size() <= 256;
 
       allow update: if (
-        isAuthenticated()
-        && resource != null
+        exists(/databases/$(database)/documents/visits/$(visitId))
+        && isAuthenticated()
         && 'uid' in resource.data
         && resource.data.uid == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sectionsViewed', 'lastActivityAt'])

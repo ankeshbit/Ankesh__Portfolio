@@ -2,7 +2,7 @@ import '../styles.css';
 import './auth/auth-styles.css';
 import { subscribeToAuth, logoutUser, checkIsAdmin } from './firebase/auth.js';
 import { isFirebaseConfigured } from './firebase/config.js';
-import { initAuthUI, setAuthMode } from './auth/auth-ui.js';
+import { initAuthUI, setAuthMode, signupInProgress } from './auth/auth-ui.js';
 import { initAdminUI, loadAndRenderAdmin } from './admin/admin-ui.js';
 import { startVisitorTracking, stopVisitorTracking } from './tracking/tracker.js';
 import { syncUserProfileOncePerSession } from './firebase/firestore.js';
@@ -318,7 +318,11 @@ function initApp() {
     currentUser = user;
     if (user) {
       isUserAdmin = await checkIsAdmin(user);
-      await syncUserProfileOncePerSession(user);
+      if (!signupInProgress) {
+        syncUserProfileOncePerSession(user).catch(err => {
+          console.warn('Sync profile notice:', err.message);
+        });
+      }
     } else {
       isUserAdmin = false;
     }
