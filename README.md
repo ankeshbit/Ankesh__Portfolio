@@ -74,3 +74,23 @@ To manually verify that profile synchronization runs once per browser session an
 6. Confirm `users/{uid}.loginCount` is still `1`:
    - `syncUserProfileOncePerSession` reads `sessionStorage.getItem('synced_profile_<uid>')`, sees the session key, and exits early without sending a returning-login update.
 
+---
+
+## 🖱️ Smooth Scrolling (Lenis)
+
+The portfolio uses [Lenis](https://github.com/darkroomengineering/lenis) (`src/scroll/smooth-scroll.js`) for smooth, inertial wheel/trackpad scrolling while preserving native touch scrolling on mobile devices and respecting the user's `prefers-reduced-motion` settings.
+
+### Configuration & Tuning
+To customize the scroll feel, edit `src/scroll/smooth-scroll.js`:
+- **`duration`** (default `1.2`): The scroll duration in seconds (higher values make scrolling feel slower and more floaty).
+- **`wheelMultiplier`** (default `0.9`): Sensitivity multiplier for mouse wheel scrolling (decrease for slower travel, increase for faster travel).
+
+### How to Disable
+To turn off smooth scrolling completely and revert to browser-native scrolling:
+1. Open `src/scroll/smooth-scroll.js`.
+2. Set the export flag to false:
+   ```javascript
+   export const ENABLE_SMOOTH_SCROLL = false;
+   ```
+
+

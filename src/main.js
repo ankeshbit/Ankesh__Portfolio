@@ -6,6 +6,7 @@ import { initAuthUI, setAuthMode, signupInProgress } from './auth/auth-ui.js';
 import { initAdminUI, loadAndRenderAdmin } from './admin/admin-ui.js';
 import { startVisitorTracking, stopVisitorTracking } from './tracking/tracker.js';
 import { syncUserProfileOncePerSession } from './firebase/firestore.js';
+import { startSmoothScroll, stopSmoothScroll, scrollToTarget } from './scroll/smooth-scroll.js';
 
 // DOM Elements
 const loadingScreen = document.getElementById('auth-loading-screen');
@@ -62,6 +63,7 @@ async function handleRoute() {
 
   // If user is NOT authenticated
   if (!currentUser) {
+    stopSmoothScroll();
     stopVisitorTracking();
     hidePortfolio();
     hideAdmin();
@@ -91,6 +93,8 @@ async function handleRoute() {
   if (path === '/admin') {
     // Admin Route Check
     if (isUserAdmin) {
+      stopSmoothScroll();
+      stopVisitorTracking();
       hideAuth();
       hidePortfolio();
       showAdmin();
@@ -107,6 +111,7 @@ async function handleRoute() {
   hideAdmin();
   showPortfolio();
   startVisitorTracking(currentUser);
+  startSmoothScroll();
 
   // If there's an anchor in the hash, scroll to it smoothly
   if (window.location.hash && window.location.hash.length > 1) {
@@ -115,7 +120,7 @@ async function handleRoute() {
       const targetEl = document.getElementById(targetId);
       if (targetEl) {
         setTimeout(() => {
-          targetEl.scrollIntoView({ behavior: 'smooth' });
+          scrollToTarget(targetEl);
         }, 100);
       }
     } catch (_) {

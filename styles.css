@@ -65,11 +65,36 @@
   box-sizing: border-box;
 }
 
+/* ─── Lenis Smooth Scrolling ─── */
+html.lenis,
+html.lenis-smooth {
+  height: auto;
+}
+
+html.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+html.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+[data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 80px;
   font-size: 16px;
   background: var(--bg-primary);
+}
+
+html:not(.lenis) {
+  scroll-behavior: smooth;
 }
 
 body {

@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    ANKESH SRIVASTAVA — PORTFOLIO SCRIPTS
    ═══════════════════════════════════════════════════════════════ */
+import { scrollToTarget, lockScroll, unlockScroll } from './src/scroll/smooth-scroll.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -313,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = decodeURIComponent(href.slice(1));
         const target = document.getElementById(id);
         if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          scrollToTarget(target);
         }
       } catch (_) {
         // Skip malformed/invalid selector
@@ -451,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (lightboxLink) lightboxLink.href = src;
     lightboxCaption.textContent = caption;
     lightbox.classList.add('open');
-    document.body.style.overflow = 'hidden'; // Disable scroll
+    lockScroll();
   }
 
   // Click listener for achievements certificates
@@ -472,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const closeLightbox = () => {
       lightbox.classList.remove('open');
-      document.body.style.overflow = ''; // Restore scroll
+      unlockScroll();
     };
 
     if (closeBtn) {
@@ -815,14 +816,14 @@ void main() {
   function openCert() {
     if (certModal) {
       certModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
   }
 
   function closeCert() {
     if (certModal) {
       certModal.classList.remove('open');
-      document.body.style.overflow = '';
+      unlockScroll();
     }
   }
 
@@ -844,14 +845,14 @@ void main() {
   function openProdigyCert() {
     if (prodigyCertModal) {
       prodigyCertModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
   }
 
   function closeProdigyCert() {
     if (prodigyCertModal) {
       prodigyCertModal.classList.remove('open');
-      document.body.style.overflow = '';
+      unlockScroll();
     }
   }
 
@@ -873,14 +874,14 @@ void main() {
   function openAlfidoCert() {
     if (alfidoCertModal) {
       alfidoCertModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
   }
 
   function closeAlfidoCert() {
     if (alfidoCertModal) {
       alfidoCertModal.classList.remove('open');
-      document.body.style.overflow = '';
+      unlockScroll();
     }
   }
 
@@ -902,14 +903,14 @@ void main() {
   function openTCSPhoto() {
     if (tcsPhotoModal) {
       tcsPhotoModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
   }
 
   function closeTCSPhoto() {
     if (tcsPhotoModal) {
       tcsPhotoModal.classList.remove('open');
-      document.body.style.overflow = '';
+      unlockScroll();
     }
   }
 
@@ -931,14 +932,14 @@ void main() {
   function openIsmartCert() {
     if (ismartCertModal) {
       ismartCertModal.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
   }
 
   function closeIsmartCert() {
     if (ismartCertModal) {
       ismartCertModal.classList.remove('open');
-      document.body.style.overflow = '';
+      unlockScroll();
     }
   }
 
